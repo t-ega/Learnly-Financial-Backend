@@ -6,7 +6,9 @@ import * as path from "path";
 @Injectable()
 export class MyLoggerService extends ConsoleLogger {
 
-    async logToFile(entry){
+    async logToFile(entry, level?: string){
+        const logFileName = level === "error" ? "errorLogs.log" : "myLogFile.log";
+
         const formattedEntry = `${Intl.DateTimeFormat('en-US', {
             dateStyle: 'short',
             timeStyle: 'short',
@@ -20,7 +22,7 @@ export class MyLoggerService extends ConsoleLogger {
                 await fsPromises.mkdir(path.join(__dirname, '..', '..', 'logs'))
             }
             // Append to that file
-            await fsPromises.appendFile(path.join(__dirname, '..', '..', 'logs', 'myLogFile.log'), formattedEntry);
+            await fsPromises.appendFile(path.join(__dirname, '..', '..', 'logs', logFileName), formattedEntry);
 
         } catch (e) {
             if (e instanceof Error) console.error(e.message)
@@ -40,7 +42,7 @@ export class MyLoggerService extends ConsoleLogger {
         // create a new entry for the log which would be entered into our text file.
         const entry = `${stackOrContext}\t${message}`;
 
-        this.logToFile(entry);
+        this.logToFile(entry, "error");
         
         super.error(message, stackOrContext);
     }

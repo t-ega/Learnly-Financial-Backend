@@ -6,13 +6,13 @@ export class TransactionDto {
    * The source account number for the transaction, maybe empty if it is a deposit
    */
   @IsNotEmpty()
-  sourceAccountNumber: string;
+  source: string;
 
   /**
    * The destination account number for the transaction
    */
   @IsNotEmpty()
-  destinationAccountNumber: string;
+  destination: string;
 
     /**
     * The type of transaction 

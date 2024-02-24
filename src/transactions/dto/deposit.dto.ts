@@ -5,7 +5,7 @@ export class CreateDepositDto {
    * The destination account number for the transaction
    */
   @IsNotEmpty()
-  destinationAccountNumber: string;
+  destination: string;
 
   /**
    * The amount of the transaction

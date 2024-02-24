@@ -1,13 +1,26 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { InjectModel } from '@nestjs/mongoose';
-import { User } from './User.schema';
-import { Model } from 'mongoose';
-import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from "bcrypt"
+import * as _ from "lodash";
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+
+import { CreateUserDto } from './dto/create-user.dto';
+import { User } from './User.schema';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
+  /**
+   * This class ensures that Users should be able to register,
+   *  log in, and access protected resources based on their roles.
+   * Some endpoints are limited to only admins,these endpoints include:
+   * getUsers
+   * 
+   * 
+   * Note: This service doesnt support operations like update/delete on the users model.
+   * 
+   * @param userModel User model to interact with.
+   */
 
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
@@ -18,7 +31,13 @@ export class UsersService {
      * @returns The created user
      * @throws HttpException with a status code 400 if the password and confirm password do not match
      */
-    await this.userModel.deleteMany();
+
+    // check if a user with that email or phone number exists
+    const exists = await this.userModel.exists(
+      { $or: [{email: createUserDto.email}, {phoneNumber: createUserDto.phoneNumber}]}
+    );
+
+    if (exists) throw new HttpException("A user with that email or phone number already exists", HttpStatus.BAD_REQUEST);
 
     const { password, confrimPassword, ...userObject } = createUserDto;
 
@@ -30,8 +49,10 @@ export class UsersService {
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = await this.userModel.create({ password: hashedPassword, ...userObject });
-    return user.save();
+    const user = new this.userModel({ password: hashedPassword, ...userObject });
+    await user.save()
+    
+    return _.pick(user.save(), ["firstname", "lastname", "email", "phoneNumber"]);
   }
 
   async getUsers(): Promise<User[]>{

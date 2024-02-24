@@ -16,8 +16,8 @@ export enum UserRoles {
 }
 
 export enum TransactionType{
-    DEPOSIT,
-    TRANSFER
+    DEPOSIT = "DEPOSIT",
+    TRANSFER = "TRANSFER"
 }
 
 export interface ITransactionData {
@@ -27,8 +27,8 @@ export interface ITransactionData {
 }
 
 export interface ITransferResponse {
-    sourceAccountNumber: string
-    destinationAccountNumber: string
+    source?: string
+    destination: string
     amount: number
     success: boolean
 }
@@ -44,4 +44,11 @@ export interface IAccountDetails {
     owner: IUser
     balance: number
     accountNumber: string
+}
+
+export type MyErrorResponseObj = {
+    statusCode: number,
+    timestamp: string,
+    path: string,
+    response: string | object,
 }

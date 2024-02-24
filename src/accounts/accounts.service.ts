@@ -13,6 +13,15 @@ import { CreateAccountDto } from './dto/create-account.dto';
 
 @Injectable()
 export class AccountsService {
+
+    /**
+     * This service is used to manage user accounts, 
+     * including the ability to create new accounts, 
+     * retrieve account details, and list transactions associated with a specific account.
+     * @param accountModel The accounts model
+     * @param transactionService The transactions service
+     */
+    
     constructor(
     @InjectModel(Account.name) private accountModel :  Model<Account>,
     @Inject((forwardRef(() => TransactionsService)))private transactionService: TransactionsService
@@ -32,8 +41,7 @@ export class AccountsService {
         if (userAccount) return userAccount
 
         const user = new this.accountModel({pin: hashedPin, accountNumber, ...values});
-        await user.save();
-        return user;
+        return await user.save();
     }
 
     async findAll() : Promise<Account[]>{
@@ -60,14 +68,15 @@ export class AccountsService {
         return account
     }
 
-    async updateAccount(accountNumber: string, updateAccountDto: UpdateAccountDto, session: ClientSession) : Promise<Account>{
+    async updateAccount(accountNumber: string, updateAccountDto: UpdateAccountDto, session?: ClientSession) : Promise<Account>{
         // pass in the session in order to maintain atomicity during updates
         const account = await this.accountModel.findOneAndUpdate({accountNumber}, updateAccountDto, {new: true, session});
-        return account
+        return account;
     }
 
-    async getMyTransactions(id: string): Promise <Transaction[]>{       
-        return this.transactionService.getTransactionsByUser(id)
+    async getMyTransactions(id: string): Promise <Transaction[]>{     
+        const account = await this.findAccountByUserId(id); 
+        return this.transactionService.getOne(account.accountNumber);
     }
 
     private generateAccountNumber(): string {

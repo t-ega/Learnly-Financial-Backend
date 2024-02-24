@@ -5,13 +5,13 @@ export class CreateTransferDto {
    * The source account number for the transaction
    */
   @IsNotEmpty()
-  sourceAccountNumber: string;
+  source: string;
 
   /**
    * The destination account number for the transaction
    */
   @IsNotEmpty()
-  destinationAccountNumber: string;
+  destination: string;
 
   /**
    * The amount of the transaction

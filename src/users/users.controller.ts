@@ -1,7 +1,9 @@
 import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import mongoose from 'mongoose';
+
+// internal imports
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import mongoose from 'mongoose';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { AdminGuard } from 'src/guards/isadmin.guard';
@@ -9,6 +11,14 @@ import { IRequestPayload } from 'src/types';
 
 @Controller('users')
 export class UsersController {
+  /**
+   * This class ensures that Users should be able to register,
+   *  log in, and access protected resources based on their roles.
+   * It achieves role based authentication by using guards.
+   * Note: This controller doesnt support operations like update/delete on the users model.
+   * 
+   * @param usersService User service for the controller.
+   */
 
   constructor(private readonly usersService: UsersService) {}
 

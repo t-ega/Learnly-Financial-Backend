@@ -6,11 +6,18 @@ import { TransactionsService } from './transactions.service';
 import { IRequestPayload } from 'src/types';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { CreateDepositDto } from './dto/deposit.dto';
+import { MyLoggerService } from 'src/my-logger/my-logger.service';
 
 @UseGuards(AuthGuard) // all users must be authenticated to use this endpoint
 @Controller('transactions')
 export class TransactionsController {
+    /** This controller various enables types of transactions, including deposits, 
+     * withdrawals, and transfers between accounts.
+     * It enables `MONITORING` features like logging when ever a transaction(deposit/transfer) is made.
+     * @param transactionService 
+     */
 
+    private readonly logger = new MyLoggerService(TransactionsController.name);
     constructor(private transactionService : TransactionsService){}
 
     @UseGuards(AdminGuard)
@@ -24,19 +31,25 @@ export class TransactionsController {
 
     @Get("me")
     async getMyTransactions(@Req() request : IRequestPayload): Promise <Transaction[]>{    
-       return await this.transactionService.getTransactionsByUser(request.user?.id);
+       return await this.transactionService.getOne(request.user?.id);
     }
 
     @Post("transfer")
     async transfer(@Body() createTransferDto: CreateTransferDto, @Req() req: IRequestPayload){
         const idempotencyKey = req.headers['idempotency-key']?.[0];
-        return await this.transactionService.transferFunds(createTransferDto, idempotencyKey);
+        const response = await this.transactionService.transferFunds(createTransferDto, idempotencyKey);
+        this.logger.log(`Transfer executed for:\t${response.destination}\tFROM: ${response.source}\t Success: ${response.success}`);
+        return response;
     }
 
     @Post("deposit")
     async deposit(@Body() createDepositDto: CreateDepositDto, @Req() req: IRequestPayload){
         const idempotencyKey = req.headers['idempotency-key']?.[0];
-        return await this.transactionService.depositFunds(createDepositDto, idempotencyKey);
+        const response = await this.transactionService.depositFunds(createDepositDto, idempotencyKey);
+        throw new Error("fkf")
+        
+        this.logger.log(`Deposit made for:\t${response.destination}\tSuccess: ${response.success}`);
+        return response;
     }
 
     

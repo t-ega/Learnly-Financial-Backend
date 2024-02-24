@@ -15,6 +15,11 @@ import { CreateDepositDto } from './dto/deposit.dto';
 export class TransactionsService {
   /**
    * This module is responsible for managing all transactions that occur in the system.
+   * It is used to manage deposits, withdrawals, and transfers between accounts. 
+   * It has features that ensure that transactions are atomic and consistent.
+   * NOTE: Atomic transactions(Sessions) can only work on a shared replica set!
+   * @see [Atomic-Transactions](https://www.mongodb.com/docs/manual/core/write-operations-atomicity/)
+   * 
    * It relies on the below modules for efficiency:
    * 
    * @param transactionsModel | This serves as the link to the mongoose entity.
@@ -76,6 +81,9 @@ export class TransactionsService {
      * @returns The created transaction
      */
 
+    // check if the source and destination are of mongoose id or an account number
+    
+
     const body = await this.transactionsModel.create(transactionDto);
 
     if (idempotencyKey) {
@@ -95,20 +103,21 @@ export class TransactionsService {
     return await this.transactionsModel.find();
   }
 
-  async getTransactionsByUser(userId: string): Promise<Transaction[]> {
+  async getOne(accountNumber: string): Promise<Transaction[]> {
     /**
      * Retrieve transactions associated with a user
-     * @param userId - The ID of the user
+     * @param accountNumber - The acccount number of the user
      * @returns Transactions associated with the specified user
      */
+    console.log(accountNumber)
 
     return this.transactionsModel.find({
-      $or: [{ source: userId }, { destination: userId }],
+      $or: [{ source: accountNumber }, { destination: accountNumber }],
     });
   }
 
   async transferFunds(createTransferDto: CreateTransferDto, idempotencyKey?: string): Promise<ITransferResponse> {
-    const {sourceAccountNumber, amount, pin, destinationAccountNumber} = createTransferDto;
+    const {source, amount, pin, destination} = createTransferDto;
     /**
      * Transfer funds between two accounts
      * @param senderAccountNumber - The account number of the sender
@@ -122,17 +131,17 @@ export class TransactionsService {
     const session = await this.transactionsModel.startSession();
     session.startTransaction();
 
-    const response = {sourceAccountNumber, destinationAccountNumber, amount, success: false}
+    const response = { source, destination, amount, success: false}
   
 
-    const senderAccount = await this.accountService.findAccountByAccountNumber(sourceAccountNumber);
-    const recipientAccount = await this.accountService.findAccountByAccountNumber(destinationAccountNumber);
+    const senderAccount = await this.accountService.findAccountByAccountNumber(source);
+    const recipientAccount = await this.accountService.findAccountByAccountNumber(destination);
 
     if (!senderAccount || !recipientAccount) {
       throw new HttpException('One or both bank accounts do not exist.', HttpStatus.BAD_REQUEST);
     }
 
-    if(sourceAccountNumber === destinationAccountNumber){
+    if(source === destination){
       throw new HttpException("Sender and recipient account cannot be the same", HttpStatus.BAD_REQUEST);
     }
 
@@ -173,16 +182,18 @@ export class TransactionsService {
     return response
   }
 
-  async depositFunds(createDepositDto: CreateDepositDto, idempotencyKey? : string): Promise<void> {
+  async depositFunds(createDepositDto: CreateDepositDto, idempotencyKey? : string): Promise<ITransferResponse> {
     /**
      * Deposit funds into an account
      * @param destinationAccountNumber - The account number to deposit funds into
      * @param amount - The amount to deposit
      * @throws HttpException with a status code 400 if the bank account does not exist
      */
-    const { destinationAccountNumber, amount } = createDepositDto
+    const { destination, amount } = createDepositDto
 
-    const account = await this.accountService.findAccountByAccountNumber(destinationAccountNumber);
+    const response = { destination, amount, success: false}
+
+    const account = await this.accountService.findAccountByAccountNumber(destination);
 
     if (!account) {
       throw new HttpException('Bank account does not exist.', HttpStatus.BAD_REQUEST);
@@ -194,16 +205,20 @@ export class TransactionsService {
 
     try {
         const updatedBalance = account.balance + amount;
-        await this.accountService.updateAccount(account.accountNumber, { balance: updatedBalance }, session);
+        await this.accountService.updateAccount(account.accountNumber, { balance: updatedBalance });
         
       // register the transaction
-      const depositDto = {...createDepositDto, transactionType: TransactionType.DEPOSIT, sourceAccountNumber: account.accountNumber};
+      const depositDto = {...createDepositDto, transactionType: TransactionType.DEPOSIT, source: account.accountNumber};
       await this.create(depositDto, idempotencyKey);
+
     }catch(error){
         await session.abortTransaction();
         session.endSession();
         throw error;
     }
+
+    response.success = true;
+    return response
 
   }
 
