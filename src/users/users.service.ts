@@ -11,7 +11,7 @@ export class UsersService {
 
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto): Promise<User>{
     /**
      * Create a new user in the system
      * @param createUserDto - User details for registration
@@ -34,7 +34,7 @@ export class UsersService {
     return user.save();
   }
 
-  async getUsers() {
+  async getUsers(): Promise<User[]>{
     /**
      * Retrieve all users in the system
      * @returns All users in the system
@@ -42,7 +42,7 @@ export class UsersService {
     return this.userModel.find();
   }
 
-  async getUserByEmail(email: string) {
+  async getUserByEmail(email: string): Promise<User>{
     /**
      * Retrieve a user by their email
      * @param email - The email of the user to retrieve
@@ -51,7 +51,7 @@ export class UsersService {
     return await this.userModel.findOne({ email });
   }
 
-  async getUserById(id: string) {
+  async getUserById(id: string): Promise<User>{
     /**
      * Retrieve a user by their ID
      * @param id - The ID of the user to retrieve
@@ -60,7 +60,7 @@ export class UsersService {
     return await this.userModel.findById(id);
   }
 
-  async updateUserById(id: string, updateUserDto: UpdateUserDto) {
+  async updateUserById(id: string, updateUserDto: UpdateUserDto): Promise<User>{
     /**
      * Update a user by their ID
      * @param id - The ID of the user to update
@@ -70,7 +70,17 @@ export class UsersService {
     return await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
   }
 
-  async deleteUserById(id: string) {
+  async suspendOrEnableUserAccount(userId: string, reason: string): Promise<void>{
+    /**
+     * Suspend a user's account by setting the `isActive` property to false.
+     * Log the reason why the user was suspended to the logger.s
+     */
+    const user = await this.userModel.findById(userId);
+    user.isActive = !user.isActive; // suspend or re-enable it
+    user.save()
+  }
+
+  async deleteUserById(id: string): Promise<User>{
     /**
      * Delete a user by their ID
      * @param id - The ID of the user to delete

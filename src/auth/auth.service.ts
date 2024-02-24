@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { UserRoles } from 'src/types';
+import { Ipayload, UserRoles } from 'src/types';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -20,9 +20,11 @@ export class AuthService {
          * This service is called everytime a user logs in.
          * After a successful login an object is sent back to the user which contains 
          * their auth_token and other details.
-         * @see ISignInResponse for more details on the structure of this object.
+         * @satisfies { IPAYLOAD } | Every `payload` issued must be a type of IPAYLOAD.
+         * @see IPAYLOAD in the types files for more details on the structure of this object.
          * @throws HttpException for invalid login attempts.
          */
+
         const user = await this.userService.getUserByEmail(email);
 
         if (!user) throw new HttpException("Email or password incorrect", HttpStatus.BAD_REQUEST);
@@ -32,7 +34,10 @@ export class AuthService {
         if(!isValid) throw new HttpException(`Email or password incorrect.`, HttpStatus.BAD_REQUEST);
 
         // construct the payload which is going to be used to verify the user during subsequent requests
-        const jwtPayload  = {id: user.id, role: UserRoles.REGULAR}
+
+        // every JWTPAYLOAD must use the IPAYLOAD interface for annotations
+        const jwtPayload : Ipayload  = {id: user.id, role: UserRoles.REGULAR}
+        
         const x_auth_token =  await this.jwtService.signAsync(jwtPayload);
 
         // update the user's last sign up date

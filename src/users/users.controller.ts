@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { AdminGuard } from 'src/guards/isadmin.guard';
+import { IRequestPayload } from 'src/types';
 
 @Controller('users')
 export class UsersController {
@@ -21,7 +22,7 @@ export class UsersController {
     return await this.usersService.create(createUserDto);
   }
 
-  @UseGuards(AdminGuard) // enforce endpoint for only admins
+  @UseGuards(AuthGuard, AdminGuard) // enforce endpoint for only admins
   @Get()
   /**
    * Retrieve all users
@@ -38,7 +39,7 @@ export class UsersController {
    * @param req - The current request object
    * @returns The authenticated user
    */
-  async findUser(@Request() req){
+  async findUser(@Request() req :IRequestPayload){
     return await this.usersService.getUserById(req.user.id)
   }
 
@@ -51,6 +52,7 @@ export class UsersController {
    * @returns The user with the specified ID
    */
   async getUserById(@Param("id") id: string){
+    
     const isValid = mongoose.isValidObjectId(id);
 
     if (!isValid) throw new NotFoundException("User not found");

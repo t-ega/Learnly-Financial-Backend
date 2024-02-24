@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { MyLoggerService } from './my-logger/my-logger.service';
 
 
 async function bootstrap() {
@@ -10,7 +11,12 @@ async function bootstrap() {
    * @see [Validation](https://docs.nestjs.com/techniques/validation#auto-validation)
   **/
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true
+  });
+  
+  // overide the default logging module 
+  app.useLogger(new MyLoggerService());
 
   // when more features are added, for backwards compatibility we can go with v2/api
   app.setGlobalPrefix("/v1/api");

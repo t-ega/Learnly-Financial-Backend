@@ -1,4 +1,11 @@
-export interface ISignInResponse {
+import { Request } from "express"
+
+export interface IRequestPayload extends Request {
+    user : Ipayload,
+    idempotencyKey?: string
+}
+
+export interface Ipayload {
     id: string
     role: UserRoles
 }
@@ -17,5 +24,24 @@ export interface ITransactionData {
     source: string
     destination: string
     amount: number
-    idempotencyKey: string // used to cache the transaction in order to avoid duplicate transactions.
+}
+
+export interface ITransferResponse {
+    sourceAccountNumber: string
+    destinationAccountNumber: string
+    amount: number
+    success: boolean
+}
+
+export interface IUser {
+     firstname: string
+     lastname: string
+     email: string
+     phoneNumber: string
+}
+
+export interface IAccountDetails {
+    owner: IUser
+    balance: number
+    accountNumber: string
 }

@@ -11,7 +11,7 @@ import { UsersModule } from '../users/users.module';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET_KEY,
-      signOptions: { expiresIn: '5m' }, // expire after 5 mins
+      signOptions: { expiresIn: '5h' }, // expire after 5h. Change when in production environment!
     }),
     CacheModule.register()
   ],

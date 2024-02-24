@@ -8,7 +8,7 @@ export class Transaction {
     @Prop({type: mongoose.Schema.Types.ObjectId, ref: "Account"})
     source: Account
 
-    @Prop({type: TransactionType, required: true})
+    @Prop({type: String, required: true})
     transactionType : TransactionType // Transfer or Deposit
 
     @Prop({type: mongoose.Schema.Types.ObjectId, required: true})

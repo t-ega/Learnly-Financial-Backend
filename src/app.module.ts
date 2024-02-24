@@ -7,9 +7,9 @@ import {ThrottlerGuard, ThrottlerModule} from "@nestjs/throttler"
 import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { AccountModule } from './account/account.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { MyLoggerModule } from './my-logger/my-logger.module';
 
 /**
  * For this module, Set the throttler timeToLive(ttl) to 1 secs in order to 
@@ -26,9 +26,9 @@ import { TransactionsModule } from './transactions/transactions.module';
       limit: 3
     }]),
     AuthModule,
-    AccountModule,
     AccountsModule,
     TransactionsModule,
+    MyLoggerModule,
   ],
   controllers: [AppController],
   providers: [

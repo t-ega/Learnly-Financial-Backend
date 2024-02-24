@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from "class-validator"
+import { IsNotEmpty, IsNumber, IsString, Max, MaxLength, Min, MinLength } from "class-validator"
 
 export class CreateAccountDto {
     
@@ -8,7 +8,6 @@ export class CreateAccountDto {
 
     @IsNotEmpty()
     @IsNumber()
-    @MinLength(4)
-    @MaxLength(4)
+    @Min(3)
     pin: number
 }

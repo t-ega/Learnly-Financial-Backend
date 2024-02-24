@@ -11,11 +11,11 @@ export class Account {
     @Prop()
     accountNumber: string
 
-    @Prop()
+    @Prop({default: 0})
     balance: number
 
     @Prop()
-    pin: number
+    pin: string //the pin would be hashed to prevent compromization
 
 }
 
