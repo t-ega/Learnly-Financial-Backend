@@ -24,7 +24,7 @@ export class UsersService {
 
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User>{
+  async create(createUserDto: CreateUserDto){
     /**
      * Create a new user in the system
      * @param createUserDto - User details for registration

@@ -8,8 +8,7 @@ export class UpdateAccountDto {
     @IsPositive()
     balance?: number
 
-    @IsNumber()
     @MinLength(4)
     @MaxLength(4)
-    pin?: number
+    pin?: string
 }
