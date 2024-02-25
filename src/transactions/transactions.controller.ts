@@ -31,7 +31,7 @@ export class TransactionsController {
 
     @Get("me")
     async getMyTransactions(@Req() request : IRequestPayload): Promise <Transaction[]>{    
-       return await this.transactionService.getOne(request.user?.id);
+       return await this.transactionService.getTransactionsByUser(request.user?.id);
     }
 
     @Post("transfer")

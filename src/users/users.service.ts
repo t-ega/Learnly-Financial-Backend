@@ -7,6 +7,7 @@ import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './User.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { IUser } from 'src/types';
 
 @Injectable()
 export class UsersService {
@@ -55,7 +56,7 @@ export class UsersService {
     return _.pick(user.save(), ["firstname", "lastname", "email", "phoneNumber"]);
   }
 
-  async getUsers(): Promise<User[]>{
+  async getUsers(): Promise<IUser[]>{
     /**
      * Retrieve all users in the system
      * @returns All users in the system
@@ -63,7 +64,7 @@ export class UsersService {
     return this.userModel.find();
   }
 
-  async getUserByEmail(email: string): Promise<User>{
+  async getUserByEmail(email: string): Promise<IUser>{
     /**
      * Retrieve a user by their email
      * @param email - The email of the user to retrieve
@@ -72,7 +73,7 @@ export class UsersService {
     return await this.userModel.findOne({ email });
   }
 
-  async getUserById(id: string): Promise<User>{
+  async getUserById(id: string): Promise<IUser>{
     /**
      * Retrieve a user by their ID
      * @param id - The ID of the user to retrieve
@@ -81,7 +82,7 @@ export class UsersService {
     return await this.userModel.findById(id);
   }
 
-  async updateUserById(id: string, updateUserDto: UpdateUserDto): Promise<User>{
+  async updateUserById(id: string, updateUserDto: UpdateUserDto): Promise<IUser>{
     /**
      * Update a user by their ID
      * @param id - The ID of the user to update
@@ -101,7 +102,7 @@ export class UsersService {
     user.save()
   }
 
-  async deleteUserById(id: string): Promise<User>{
+  async deleteUserById(id: string): Promise<IUser>{
     /**
      * Delete a user by their ID
      * @param id - The ID of the user to delete

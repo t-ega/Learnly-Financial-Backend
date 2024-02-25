@@ -1,6 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { ClientSession, Model } from 'mongoose';
+import { ClientSession, HydratedDocument, Model } from 'mongoose';
 import * as bcrypt from "bcrypt";
 
 // internal packages
@@ -9,6 +9,7 @@ import { Transaction } from 'src/transactions/transactions.schema';
 import { TransactionsService } from 'src/transactions/transactions.service';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { CreateAccountDto } from './dto/create-account.dto';
+import { IAccount, ITransaction } from 'src/types';
 
 
 @Injectable()
@@ -27,7 +28,7 @@ export class AccountsService {
     @Inject((forwardRef(() => TransactionsService)))private transactionService: TransactionsService
     ) {}
 
-    async create(createAccountDto: CreateAccountDto) : Promise<Account>{
+    async create(createAccountDto: CreateAccountDto) : Promise<IAccount>{
         const { pin, ...values} = createAccountDto;
 
         // hash pin before saving
@@ -37,14 +38,15 @@ export class AccountsService {
         const accountNumber = this.generateAccountNumber();
 
         // check if an account already exits before creating
-        const userAccount = await this.accountModel.findOne({owner: createAccountDto.owner});
+        const userAccount: HydratedDocument<IAccount> = await this.accountModel.findOne({owner: createAccountDto.owner});
         if (userAccount) return userAccount
 
-        const user = new this.accountModel({pin: hashedPin, accountNumber, ...values});
-        return await user.save();
+        const user: HydratedDocument<IAccount> =  new this.accountModel({pin: hashedPin, accountNumber, ...values});
+        await user.save();
+        return user;
     }
 
-    async findAll() : Promise<Account[]>{
+    async findAll() : Promise<IAccount[]>{
         /** 
          * Note: This service should be only called by admins.
          * */ 
@@ -52,31 +54,36 @@ export class AccountsService {
     
     }
 
-    async findAccountByAccountNumber(accountNumber: string): Promise<Account>{
+    async findAccountByAccountNumber(accountNumber: string): Promise<IAccount>{
         /**
-         * Find an account by the associated account Number
+         * Find an account by the associated account Number.
+         * Note: HydratedDocument<IUser> represents a hydrated Mongoose document,
+         *  with methods, virtuals, and other Mongoose-specific features.
+         * 
+         * @see [HydratedDocument](https://mongoosejs.com/docs/typescript.html)
          */
-        const account = await this.accountModel.findOne({accountNumber});
-        return account
-    }
-
-    async findAccountByUserId(owner_id: string) : Promise<Account> {
-        /**
-         * Find and return a users account based on the owner
-         */
-        const account = await this.accountModel.findOne({owner: owner_id});
-        return account
-    }
-
-    async updateAccount(accountNumber: string, updateAccountDto: UpdateAccountDto, session?: ClientSession) : Promise<Account>{
-        // pass in the session in order to maintain atomicity during updates
-        const account = await this.accountModel.findOneAndUpdate({accountNumber}, updateAccountDto, {new: true, session});
+        
+        const account: HydratedDocument<IAccount> = await this.accountModel.findOne({accountNumber}).populate('owner');
         return account;
     }
 
-    async getMyTransactions(id: string): Promise <Transaction[]>{     
+    async findAccountByUserId(owner_id: string) : Promise<IAccount> {
+        /**
+         * Find and return a users account based on the owner
+         */
+        const account : HydratedDocument<IAccount> = await this.accountModel.findOne({owner: owner_id});
+        return account
+    }
+
+    async updateAccount(accountNumber: string, updateAccountDto: UpdateAccountDto, session?: ClientSession) : Promise<IAccount>{
+        // pass in the session in order to maintain atomicity during updates
+        const account : HydratedDocument<IAccount> = await this.accountModel.findOneAndUpdate({accountNumber}, updateAccountDto, {new: true, session});
+        return account;
+    }
+
+    async getMyTransactions(id: string): Promise <ITransaction[]>{     
         const account = await this.findAccountByUserId(id); 
-        return this.transactionService.getOne(account.accountNumber);
+        return this.transactionService.getTransactionsByUser(account.accountNumber);
     }
 
     private generateAccountNumber(): string {

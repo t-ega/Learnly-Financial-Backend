@@ -5,7 +5,8 @@ import { JwtService } from '@nestjs/jwt';
 import { HttpException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
-import { UserRoles } from 'src/types';
+import { IUser, UserRoles } from 'src/types';
+import { HydratedDocument } from 'mongoose';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -47,17 +48,17 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('should login user and return auth token', async () => {
-      const mockUser = {
+
+      const mockUser: HydratedDocument<IUser> = {
         _id: '1',
         firstname: 'John',
         lastname: 'Doe',
         email: 'john@example.com',
         password: await bcrypt.hash('password123', 10),
         phoneNumber: '1234567890',
-        isActive: true,
         role: UserRoles.REGULAR,
-        lastLogin: null,
-      };
+      } as HydratedDocument<IUser>;
+      
       const mockPayload = { id: '1', role: UserRoles.REGULAR };
       const mockToken = 'mock_token';
 

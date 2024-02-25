@@ -6,7 +6,7 @@ import * as bcyrpt from "bcrypt";
 import { Transaction } from './transactions.schema';
 import { AccountsService } from 'src/accounts/accounts.service';
 import { UsersService } from 'src/users/users.service';
-import { ITransferResponse, TransactionType } from 'src/types';
+import { ITransaction, ITransferResponse, TransactionType } from 'src/types';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { TransactionDto } from './dto/transaction.dto';
 import { CreateDepositDto } from './dto/deposit.dto';
@@ -73,7 +73,7 @@ export class TransactionsService {
     }
   }
 
-  private async create(transactionDto: TransactionDto, idempotencyKey?: string): Promise<Transaction> {
+  private async create(transactionDto: TransactionDto, idempotencyKey?: string) {
     /**
      * An internal method to register a new transaction
      * @param transactionDto - The transaction details
@@ -81,10 +81,8 @@ export class TransactionsService {
      * @returns The created transaction
      */
 
-    // check if the source and destination are of mongoose id or an account number
-    
-
-    const body = await this.transactionsModel.create(transactionDto);
+    const body = new this.transactionsModel(transactionDto);
+    await body.save();
 
     if (idempotencyKey) {
       // Cache the response for future requests
@@ -94,7 +92,7 @@ export class TransactionsService {
     return body;
   }
 
-  async getAllTransactions(): Promise<Transaction[]> {
+  async getAllTransactions(): Promise<ITransaction[]> {
     /**
      * Retrieve all transactions
      * @returns All transactions in the system
@@ -103,13 +101,12 @@ export class TransactionsService {
     return await this.transactionsModel.find();
   }
 
-  async getOne(accountNumber: string): Promise<Transaction[]> {
+  async getTransactionsByUser(accountNumber: string): Promise<ITransaction[]> {
     /**
      * Retrieve transactions associated with a user
      * @param accountNumber - The acccount number of the user
      * @returns Transactions associated with the specified user
      */
-    console.log(accountNumber)
 
     return this.transactionsModel.find({
       $or: [{ source: accountNumber }, { destination: accountNumber }],
@@ -149,7 +146,7 @@ export class TransactionsService {
       throw new HttpException('Insufficient funds in the sender account.', HttpStatus.BAD_REQUEST);
     }
 
-    const isValid = await bcyrpt.compare(pin.toString(), senderAccount.pin.toString());
+    const isValid = await bcyrpt.compare(pin.toString(), senderAccount.pin);
 
     if (!isValid) {
         this.updatePinFailedAttempts(senderAccount.owner.id);
