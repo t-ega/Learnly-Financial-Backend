@@ -672,8 +672,8 @@ npm install
 ```
 
 4. Environment Variables
-Some environment variables have been set up to provide neccessary variables to the application
- see .env.example in the root directory of this folder and create a .env file with those variables
+Create a .env file at the root of the application.
+Some environment variables have been set up to provide neccessary variables to the application see .env.example in the root directory of this folder and create a .env file with those variables
 
 
 ## Run the Application
@@ -694,6 +694,25 @@ To run normally
 Open postman or any other application of your choice and navigate to http://localhost:3000/v1/api (or the specified port if you have configured it differently in your .env file). You should see your NestJS application running locally.
 
 
+# Dockerization
+
+To containerize your application using Docker, follow these steps:
+- Make sure you have Docker Desktop installed on your machine. Visit https://www.docker.com/ to download.
+
+1. Build the Docker image. (The dockerfile is already provided)
+
+```bash
+docker build -t learnly-backend-api .
+```
+
+2. Run the Docker container. Specify the port on the outside to which you want to map the internal ports to.
+E.g 8000:3000. Map port 8000 on the outside to port 3000 on the inside.
+
+```bash
+docker run -p 8000:3000 -d learnly-backend-api
+```
+
 For local development, make sure you have Node.js, npm, and MongoDB installed.
 
-For production deployment, it is essential to adhere to best practices in securing both your server and MongoDB instance. Additionally, you have the option to deploy the API using [Render](https://render.com/), a reliable cloud platform.
+For production deployment, it is essential to adhere to best practices in securing both your server and MongoDB instance.
+ Additionally, you have the option to deploy the API using [Render](https://render.com/), a reliable cloud platform.
