@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Request, UseGuards, UseInterceptors } from '@nestjs/common';
 import mongoose from 'mongoose';
 
 // internal imports
@@ -8,6 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '../guards/auth.guard';
 import { AdminGuard } from '../guards/isadmin.guard';
 import { IRequestPayload } from '../types';
+import { UsersTransformInterceptor } from 'src/interceptors/users.transfrom.interceptor';
 
 @Controller('users')
 export class UsersController {
@@ -33,6 +34,7 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard, AdminGuard) // enforce endpoint for only admins
+  @UseInterceptors(UsersTransformInterceptor) // transform the response using the interceptor
   @Get()
   /**
    * Retrieve all users
@@ -43,6 +45,7 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard)
+  @UseInterceptors(UsersTransformInterceptor) // transform the response using the interceptor
   @Get("me")
   /**
    * Retrieve the currently authenticated user

@@ -1,6 +1,33 @@
 # Learnly Finacial API Documentation
 
-This document provides documentation for the Leanrnly Finance REST API, including request/response formats, usage examples, limitations, and setup/deployment instructions.
+This document provides documentation for the Learnly Finance REST API, including request/response formats, usage examples, limitations, and setup/deployment instructions.
+
+# Addtional Note:
+
+## Security
+
+With heavy concerns on security there has been a lot of measures that have been put in place in order to ensure that the service is extremely secure. They are listed as follows:
+- When a transfer is ongoing in the system, the user is permitted to retry their transfer pin up to 5 maximum times, after this trial has been exceeded, the user is automatically suspened from the system by marking their account as `isActive=false`, once this is done the user wont be able to login or access any service on the system.
+- To reactive their account, an Admin must mark their account as active.
+- Some endpoints are sensitive e.g fetching all users account or listing all users in the system. Every request made to this endpoint is logged to a `myLogFile.log` with the `request IP address`.
+
+### CORS Option
+We are using cors to enable cross-origin resource sharing.
+In the `.env.example` file, there is a key you can set for the cors allowed origns, Input a list of comma seperated items for each orgin. E.g
+
+```shell
+ALLOWED_ORIGINS=ALLOWED_ORIGINS=http://example.com,http://localhost:3000,https://api.example.com
+```
+
+### Rate usage and Limiting
+This resource is rate limited to a maximum of `3 requests` from a particular IP `every 1 second`.
+If you exceed either limit, your request will return an HTTP 429 Too Many Requests status code.
+
+## Performance
+For quick and optimal perfomance of the system, all POST requests to the `transaction/transfer` and `transaction/deposit` endpoint are `cached` for idempotency. Idempotency would help in situations where users retries a request after it was successful and the response didnt get to them, the request would be cached so if they retry the system remains unchanged. 
+- This idempotency is achieved by passing in an `Idempotency-key` in the request headers.
+- **NOTE** If the idepotency key isn't passed in the request wont be cached!
+
 
 ## Table of Contents
 - [Request and Response Formats](#request-and-response-formats)
@@ -43,6 +70,10 @@ The code field represents the specific error code, and the message field provide
 - 500 Internal Server Error: An unexpected server error occurred.(Extremely Rare)
 
 ## Request and Response Formats
+
+Check this Postman collections to see a list of available requests.
+
+https://www.postman.com/payload-astronaut-82118376/workspace/learnly-api/collection/29093204-7bc0167b-efdd-4f1a-a796-e16416aa7fb2?action=share&creator=29093204
 
 # USERS
 
@@ -468,7 +499,7 @@ Response :
 {
     "owner": "65db95795427480fe2912d8e",
     "balance": 0,
-    "accountNumber: "213154321"
+    "accountNumber": "213154321"
 }
 ```
 
@@ -487,7 +518,7 @@ Request
 {
     "owner": "65db95795427480fe2912d8e",
     "balance": 0,
-    "accountNumber: "2131543271",
+    "accountNumber": "2131543271",
 }
 
 ```
@@ -505,13 +536,13 @@ Response :
     {
     "owner": "65db95795427480fe2912d8e",
     "balance": 1280,
-    "accountNumber: "2131543271",
+    "accountNumber": "2131543271",
     },
 
     {
     "owner": "56db95795427976fe2912f8d",
     "balance": 2500,
-    "accountNumber: "2131543271",
+    "accountNumber": "2131543271",
     }
 ]
 

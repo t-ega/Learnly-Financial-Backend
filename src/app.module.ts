@@ -22,7 +22,7 @@ import { MyLoggerModule } from './my-logger/my-logger.module';
     UsersModule, 
     MongooseModule.forRoot(process.env.MONGODB_URI),
     ThrottlerModule.forRoot([{
-      ttl: 1000,
+      ttl: 1000, // Maximum of 3 requests every 1 second
       limit: 3
     }]),
     AuthModule,
