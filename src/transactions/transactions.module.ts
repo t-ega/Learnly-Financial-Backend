@@ -1,11 +1,11 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { TransactionsService } from './transactions.service';
 import { TransactionsController } from './transactions.controller';
 import { CacheModule } from '@nestjs/cache-manager';
-import { UsersModule } from 'src/users/users.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Transaction, TransactionSchema } from './transactions.schema';
-import { AccountsModule } from 'src/accounts/accounts.module';
+import { AccountsModule } from '../accounts/accounts.module';
+import { UsersModule } from '../users/users.module';
+import { TransactionsService } from './transactions.service';
 
 @Module({
   imports: [

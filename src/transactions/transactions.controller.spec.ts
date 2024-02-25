@@ -1,9 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { JwtService } from '@nestjs/jwt';
+
 import { TransactionsController } from './transactions.controller';
 import { TransactionsService } from './transactions.service';
-import { IRequestPayload, UserRoles } from 'src/types';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { CreateDepositDto } from './dto/deposit.dto';
+import { IRequestPayload, UserRoles } from '../types';
+import { UsersService } from '../users/users.service';
 
 describe('TransactionsController', () => {
   let controller: TransactionsController;
@@ -16,12 +19,23 @@ describe('TransactionsController', () => {
         {
           provide: TransactionsService,
           useValue: {
-            getAllTransactions: jest.fn(),
-            getMyTransactions: jest.fn(),
             transfer: jest.fn(),
             deposit: jest.fn(),
           },
         },
+        {
+          provide: JwtService,
+          useValue: {
+            sign: jest.fn(),
+          },  
+        },
+        {
+          provide: UsersService,
+          useValue: {
+            getUserByEmail: jest.fn(),
+            updateUserById: jest.fn(),
+          },
+        }
       ],
     }).compile();
 

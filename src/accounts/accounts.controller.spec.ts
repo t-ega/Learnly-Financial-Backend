@@ -1,9 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { JwtService } from '@nestjs/jwt';
+import { HydratedDocument } from 'mongoose';
+
 import { AccountsController } from './accounts.controller';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
-import { IAccount, IRequestPayload, UserRoles } from 'src/types';
-import { HydratedDocument } from 'mongoose';
+import { IAccount, UserRoles } from '../types';
+import { UsersService } from '../users/users.service';
+;
 
 describe('AccountsController', () => {
   let controller: AccountsController;
@@ -18,11 +22,22 @@ describe('AccountsController', () => {
           useValue: {
             create: jest.fn(),
             findAll: jest.fn(),
-            findAccountByUserId: jest.fn(),
-            findAccountByAccountNumber: jest.fn(),
             getMyTransactions: jest.fn(),
           },
         },
+        {
+          provide: JwtService,
+          useValue: {
+            sign: jest.fn(),
+          },
+        },
+        {
+          provide: UsersService,
+          useValue: {
+            getUserByEmail: jest.fn(),
+            updateUserById: jest.fn(),
+          },
+        }
       ],
     }).compile();
 

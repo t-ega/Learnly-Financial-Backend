@@ -1,12 +1,12 @@
-import { Body, Controller, Get, Ip, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Ip, Param, Post, Req, UseGuards } from '@nestjs/common';
 import * as _ from "lodash";
 
+import { AuthGuard } from '../guards/auth.guard';
+import { AdminGuard } from '../guards/isadmin.guard';
 import { AccountsService } from './accounts.service';
-import { AuthGuard } from 'src/guards/auth.guard';
 import { CreateAccountDto } from './dto/create-account.dto';
-import { AdminGuard } from 'src/guards/isadmin.guard';
-import { IRequestPayload } from 'src/types';
-import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import { IRequestPayload } from '../types';
+import { MyLoggerService } from '../my-logger/my-logger.service';
 
 @Controller('accounts')
 @UseGuards(AuthGuard) // all users must be authenticated before they can access the accounts endpoint

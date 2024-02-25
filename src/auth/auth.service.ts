@@ -1,10 +1,11 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { Ipayload, UserRoles } from 'src/types';
-import { UsersService } from 'src/users/users.service';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { now } from 'mongoose';
 import { Response } from 'express';
+
+import { UsersService } from '../users/users.service';
+import { Ipayload, UserRoles } from '../types';
 
 @Injectable()
 export class AuthService {

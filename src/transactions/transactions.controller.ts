@@ -1,12 +1,14 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { AuthGuard } from 'src/guards/auth.guard';
-import { AdminGuard } from 'src/guards/isadmin.guard';
+
+import { MyLoggerService } from '../my-logger/my-logger.service';
+import { AuthGuard } from '../guards/auth.guard';
+import { AdminGuard } from '../guards/isadmin.guard';
 import { Transaction } from './transactions.schema';
+
 import { TransactionsService } from './transactions.service';
-import { IRequestPayload } from 'src/types';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { CreateDepositDto } from './dto/deposit.dto';
-import { MyLoggerService } from 'src/my-logger/my-logger.service';
+import { IRequestPayload } from '../types';
 
 @UseGuards(AuthGuard) // all users must be authenticated to use this endpoint
 @Controller('transactions')
@@ -46,7 +48,6 @@ export class TransactionsController {
     async deposit(@Body() createDepositDto: CreateDepositDto, @Req() req: IRequestPayload){
         const idempotencyKey = req.headers['idempotency-key']?.[0];
         const response = await this.transactionService.depositFunds(createDepositDto, idempotencyKey);
-        throw new Error("fkf")
         
         this.logger.log(`Deposit made for:\t${response.destination}\tSuccess: ${response.success}`);
         return response;

@@ -5,11 +5,10 @@ import * as bcrypt from "bcrypt";
 
 // internal packages
 import { Account } from './account.schema';
-import { Transaction } from 'src/transactions/transactions.schema';
-import { TransactionsService } from 'src/transactions/transactions.service';
+import { TransactionsService } from '../transactions/transactions.service';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { CreateAccountDto } from './dto/create-account.dto';
-import { IAccount, ITransaction } from 'src/types';
+import { IAccount, ITransaction } from '../types';
 
 
 @Injectable()

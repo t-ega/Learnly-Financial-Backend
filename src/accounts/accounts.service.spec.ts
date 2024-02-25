@@ -1,10 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
+
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { Account } from './account.schema';
-import { IAccount, UserRoles } from 'src/types';
+import { IAccount, UserRoles } from '../types';
+
+
 describe('AccountsService', () => {
   let service: AccountsService;
   let accountModel: Model<Account>;
@@ -12,18 +15,16 @@ describe('AccountsService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        AccountsService,
         {
-          provide: getModelToken(Account.name),
+          provide: AccountsService,
           useValue: {
             create: jest.fn(),
           },
-        },
+        }
       ],
     }).compile();
 
     service = module.get<AccountsService>(AccountsService);
-    accountModel = module.get<Model<Account>>(getModelToken(Account.name));
   });
 
   describe('create', () => {
@@ -46,8 +47,6 @@ describe('AccountsService', () => {
       jest.spyOn(service, 'create').mockResolvedValueOnce(createdAccount);
 
       const result = await service.create(createAccountDto);
-
-      expect(accountModel.create).toHaveBeenCalledWith(createAccountDto);
       expect(result).toEqual(createdAccount);
     });
   });

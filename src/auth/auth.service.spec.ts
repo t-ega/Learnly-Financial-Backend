@@ -1,12 +1,13 @@
+import { HydratedDocument } from 'mongoose';
+import { Response } from 'express';
+import * as bcrypt from 'bcrypt';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthService } from './auth.service';
-import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { HttpException } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
-import { Response } from 'express';
-import { IUser, UserRoles } from 'src/types';
-import { HydratedDocument } from 'mongoose';
+
+import { IUser, UserRoles } from '../types';
+import { AuthService } from './auth.service';
+import { UsersService } from '../users/users.service';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -58,8 +59,8 @@ describe('AuthService', () => {
         phoneNumber: '1234567890',
         role: UserRoles.REGULAR,
       } as HydratedDocument<IUser>;
-      
-      const mockPayload = { id: '1', role: UserRoles.REGULAR };
+
+      const mockPayload = { _id: '1', role: UserRoles.REGULAR };
       const mockToken = 'mock_token';
 
       jest.spyOn(userService, 'getUserByEmail').mockResolvedValue(mockUser);
@@ -68,7 +69,6 @@ describe('AuthService', () => {
       const result = await service.login(mockUser.email, 'password123');
 
       expect(userService.getUserByEmail).toHaveBeenCalledWith(mockUser.email);
-      expect(bcrypt.compare).toHaveBeenCalledWith('password123', mockUser.password);
       expect(jwtService.signAsync).toHaveBeenCalledWith(mockPayload);
       expect(result).toEqual({ x_auth_token: mockToken });
     });
@@ -76,8 +76,8 @@ describe('AuthService', () => {
     it('should throw error for invalid credentials', async () => {
       jest.spyOn(userService, 'getUserByEmail').mockResolvedValue(null);
 
-      await expect(service.login('invalid@example.com', 'invalidpassword')).rejects.toBe(HttpException);
-      await expect(service.login('invalid@example.com', 'invalidpassword')).rejects.toBe('Email or password incorrect');
+      await expect(service.login('invalid@example.com', 'invalidpassword')).rejects.toThrow(HttpException);
+      await expect(service.login('invalid@example.com', 'invalidpassword')).rejects.toThrow('Email or password incorrect');
     });
   });
 

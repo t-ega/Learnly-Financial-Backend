@@ -64,6 +64,7 @@ export interface IUser extends Document {
     lastname: string
     email: string
     phoneNumber: string
+    isActive: boolean
     role: UserRoles
 }
 export interface IUser extends Document {

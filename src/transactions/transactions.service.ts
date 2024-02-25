@@ -1,15 +1,17 @@
+import { Model } from 'mongoose';
+import * as bcyrpt from "bcrypt";
+
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { HttpException, HttpStatus, Inject, Injectable, forwardRef } from '@nestjs/common';
-import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import * as bcyrpt from "bcrypt";
+
 import { Transaction } from './transactions.schema';
-import { AccountsService } from 'src/accounts/accounts.service';
-import { UsersService } from 'src/users/users.service';
-import { ITransaction, ITransferResponse, TransactionType } from 'src/types';
+import { UsersService } from '../users/users.service';
+import { AccountsService } from '../accounts/accounts.service';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { TransactionDto } from './dto/transaction.dto';
 import { CreateDepositDto } from './dto/deposit.dto';
+import { ITransaction, ITransferResponse, TransactionType } from '../types';
 
 @Injectable()
 export class TransactionsService {
