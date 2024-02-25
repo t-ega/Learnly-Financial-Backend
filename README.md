@@ -52,6 +52,8 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
 - HTTP Method: POST
 - Endpoint: /users/
 - Request Format:
+
+```json
     {
     "firstname": "string",
     "lastname": "string",
@@ -61,15 +63,18 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
     "phoneNumber": "number",
   }
   
+```
 
 - Response Format:
+
+```json
 {
     "_id": "string",
     "name": "string",
     "email": "string",
     "phoneNumber": "number"
 }
-  
+```
 
 ## Fetch All Users Details (ADMIN)
 ** NOTE: This endpoint is sensitive and can only be accessed by `authorized` users (e.g Admin)
@@ -78,6 +83,8 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
 - Endpoint: /users/
 - Response Format:
 
+
+```json
 [
     {
     "_id": "string",
@@ -94,6 +101,7 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
     }
   
 ]
+```
 
 ## Fetch A Users Details (ADMIN)
 ** NOTE: This endpoint is sensitive and can only be accessed by `authorized` users (e.g Admin)
@@ -102,13 +110,15 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
 - Endpoint: /users/:user_id
 - Response Format:
 
+
+```json
 {
     "_id": "string",
     "name": "string",
     "email": "string",
     "phoneNumber": "number"
 }
-  
+```
 
 ## Fetch My Details (Regular Users)
 
@@ -116,13 +126,14 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
 - Endpoint: /users/me
 - Response Format:
 
+```json
 {
     "_id": "string",
     "name": "string",
     "email": "string",
     "phoneNumber": "number"
 }
-  
+```
 
 ## Update My Details Regular Users
 
@@ -130,22 +141,26 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
 - Endpoint: /users/me
 - Request Format:
 
+
+```json
 {
     "_id": "string (optional)",
     "name": "string (optional)",
     "email": "string (optional)",
     "phoneNumber": "number (optional)"
 }
-  
+```
 
 - Response Format:
+
+```json
 {
     "_id": "string (optional)",
     "name": "string (optional)",
     "email": "string (optional)",
     "phoneNumber": "number (optional)"
 }
-  
+ ``` 
   
 # ACCOUNTS 
 
@@ -158,17 +173,22 @@ Note: A user can have at most 1 accounts.
 - Endpoint: /acocunts/
 - Request Format:
 
+```json
 {
     "owner": "string",
     "pin": "string (optional)",
 }
+```
 
 - Response Format:
+
+```json
 {
     "owner": "string",
     "balance": 0,
     "accountNumber": "string"
 }
+```
 
 ## View all accounts
 
@@ -178,6 +198,8 @@ Constraints: User sending request must be `authorized` (e.g ADMIN).
 - Endpoint: /acocunts/
 
 - Response Format:
+
+```json
 [
     {
     "owner": "string",
@@ -192,6 +214,7 @@ Constraints: User sending request must be `authorized` (e.g ADMIN).
     }
 
 ]
+```
 
 ## View account details (REGULAR USERS)
 
@@ -201,11 +224,14 @@ Constraints: User sending request must be authenticated.
 - Endpoint: /acocunts/me
 
 - Response Format:
+
+```json
 {
     "owner": "string",
     "balance": 0,
     "accountNumber": "string"
 }
+```
 
 ## View my transactions details (REGULAR USERS)
 
@@ -215,17 +241,20 @@ Constraints: User sending request must be authenticated.
 - Endpoint: /acocunts/me/transactions
 
 - Response Format:
+
+```json
 [
     {
         "_id": "string",
         "source": "string",
         "transactionType": "string (enum)",
         "destination": "string",
-        "amount": number,
-        "createdAt": Date,
-        "updatedAt": Date
+        "amount": "number",
+        "createdAt": "Date",
+        "updatedAt": "Date"
     }
 ]
+```
 
 # Transactions
 
@@ -238,19 +267,24 @@ Constraints: User sending request must be authenticated.
 
 - Request Format:
 
+```json
 {
     "destination": "string",
-    "amount": number,
-    "pin": string
+    "amount": "number",
+    "pin": "string"
 
 }
+```
 
 - Response Format:
+
+```json
 {
     "destination": "string",
-    "amount": number,
-    "success": boolean
+    "amount": "number",
+    "success": "boolean"
 }
+```
 
 ## TRANSFER (REGULAR USER)
 
@@ -259,20 +293,26 @@ Constraints: User sending request must be authenticated.
 
 - Request Format:
 
+```json
+
 {
     "source": "string",
     "destination": "string",
-    "amount": number,
+    "amount": "number",
     "pin": "string"
 }
+```
 
 - Response Format:
+```json
+
 {
     "source": "string",
     "destination": "string",
-    "amount": number,
-    "success": boolean
+    "amount": "number",
+    "success": "boolean"
 }
+```
 
 
 ---
@@ -308,18 +348,21 @@ POST /auth/login
 Content-Type: application/json
 
 Request: 
+```json
 {
     "email": "janesmith@example.com",
     "password": "Password456#"
 }
+```
 
 Response :
 
 Headers: Authorization : Bearer bearer_token
-
+```json
 {
     "success" : true
 }
+```
 
 ### CREATING A USER
 
@@ -329,6 +372,7 @@ POST /users
 Content-Type: application/json
 Authorization: Bearer bearer_token
 
+```json
 {
   "firstname": "John",
   "lastname": "Doe",
@@ -337,9 +381,10 @@ Authorization: Bearer bearer_token
   "confrimPassword": "Custompass123#",
   "phoneNumber": "+234-9013489921"
 }
-
+```
 Response:
 
+```json
 {
     "_id" : "39893fhb30023884bdg",
     "firstname": "John",
@@ -347,6 +392,7 @@ Response:
     "email": "johndoe@gmail.com",
     "phoneNumber": "+234-9013489921"
 }
+```
 
 ### FETCHING ALL USERS DETAILS (ADMIN authorization required)
 
@@ -359,6 +405,7 @@ Authorization: Bearer bearer_token
 
 Response:
 
+```json
 [
     {
     "_id" : "34fci49304095893bcf",
@@ -375,6 +422,7 @@ Response:
     "phoneNumber": "+234-901234567"
     }
 ]
+```
 
 ### Fetching the cuurently logged in user's details
 
@@ -386,6 +434,7 @@ Authorization: Bearer bearer_token
 
 Response:
 
+```json
 {
     "_id": "65db8480be0e39e3421dd6a1",
     "firstname": "Jane",
@@ -396,7 +445,7 @@ Response:
     "joined": "2024-02-25T18:18:40.972Z",
     "lastLogin": "2024-02-25T18:29:17.722Z"
 }
-
+```
 
 ### CREATE ACCOUNT 
 
@@ -406,17 +455,22 @@ Authorization: Bearer bearer_token
 
 Request :
 
+```json
 {
     "owner": "65db95795427480fe2912d8e",
     "pin": 1234
 }
+```
 
 Response :
+
+```json
 {
     "owner": "65db95795427480fe2912d8e",
     "balance": 0,
-    "accountNumber: "2131543271",
+    "accountNumber: "213154321"
 }
+```
 
 
 ### VIEW CURRENTLY LOGGED IN USER ACCOUNT DETAILS
@@ -425,13 +479,18 @@ GET /accounts/me
 Content-Type: application/json
 Authorization: Bearer bearer_token
 
-Request :
+Request 
+
+:
+```json
 
 {
     "owner": "65db95795427480fe2912d8e",
     "balance": 0,
     "accountNumber: "2131543271",
 }
+
+```
 
 ### VIEW ALL USERS ACCOUNT DETAILS (ADMIN AUTH REQUIRED)
 
@@ -441,6 +500,7 @@ Authorization: Bearer bearer_token
 
 Response :
 
+```json
 [
     {
     "owner": "65db95795427480fe2912d8e",
@@ -455,6 +515,8 @@ Response :
     }
 ]
 
+```
+
 ### VIEW CURRENTLY LOGGED IN USER ACCOUNT TRANSACTION DETAILS
 
 GET /accounts/me/transactions
@@ -463,6 +525,7 @@ Authorization: Bearer bearer_token
 
 Response :
 
+```json
 [
     {
         "_id": "65db8f845427480fe2912d71",
@@ -486,6 +549,8 @@ Response :
     }
 ]
 
+```
+
 ### CREATE A DEPOSIT 
 
 POST /transactions/deposit
@@ -493,18 +558,23 @@ Content-Type: application/json
 Authorization: Bearer bearer_token
 
 Request :
+
+```json
 {
     "destination": "2116927207",
     "amount": 10000
 }
+```
 
 Response : 
 
+```json
 {
     "destination": "2116927207",
     "amount": 10000,
     "success": true
 }
+```
 
 ### CREATE A TRANSFER
 
@@ -514,23 +584,25 @@ Authorization: Bearer bearer_token
 
 Request :
 
+```json
 {
     "source": "2116927207",
     "destination": "2152297904",
     "amount": 500,
     "pin": 1234
 }
+```
 
 Response :
 
+```json
 {
     "source": "2116927207",
     "destination": "2152297904",
     "amount": 500,
     "success": true
 }
-
-
+```
 
 
 ---
