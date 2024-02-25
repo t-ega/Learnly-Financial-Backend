@@ -54,7 +54,7 @@ export class UsersService {
     const user = new this.userModel({ password: hashedPassword, ...userObject });
     await user.save()
     
-    return _.pick(user, ["firstname", "lastname", "email", "phoneNumber"]);
+    return _.pick(user, ["_id", "firstname", "lastname", "email", "phoneNumber", ]);
   }
 
   async getUsers(): Promise<IUser[]>{

@@ -164,8 +164,8 @@ export class TransactionsService {
       const updatedBalance = senderAccount.balance - amount;
       const recipientUpdatedBalance = recipientAccount.balance + amount;
 
-      const r = await this.accountService.updateAccount(senderAccount.accountNumber, { balance: updatedBalance }, session);
-      const j = await this.accountService.updateAccount(recipientAccount.accountNumber, { balance: recipientUpdatedBalance }, session);
+      await this.accountService.updateAccount(senderAccount.accountNumber, { balance: updatedBalance }, session);
+      await this.accountService.updateAccount(recipientAccount.accountNumber, { balance: recipientUpdatedBalance }, session);
       
       await session.commitTransaction();
       session.endSession();

@@ -46,7 +46,7 @@ The code field represents the specific error code, and the message field provide
 
 # USERS
 
-### Create a New User
+## Create a New User
 NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
 
 - HTTP Method: POST
@@ -71,7 +71,7 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
 }
   
 
-### Fetch All Users Details (ADMIN)
+## Fetch All Users Details (ADMIN)
 ** NOTE: This endpoint is sensitive and can only be accessed by `authorized` users (e.g Admin)
 
 - HTTP Method: GET
@@ -95,7 +95,7 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
   
 ]
 
-### Fetch A Users Details (ADMIN)
+## Fetch A Users Details (ADMIN)
 ** NOTE: This endpoint is sensitive and can only be accessed by `authorized` users (e.g Admin)
 
 - HTTP Method: GET
@@ -110,7 +110,7 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
 }
   
 
-### Fetch My Details (Regular Users)
+## Fetch My Details (Regular Users)
 
 - HTTP Method: GET
 - Endpoint: /users/me
@@ -124,7 +124,7 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
 }
   
 
-### Update My Details Regular Users
+## Update My Details Regular Users
 
 - HTTP Method: PUT
 - Endpoint: /users/me
@@ -149,114 +149,395 @@ NOTE: For secrity reasons, in this endpoint you cannot create an ADMIN!
   
 # ACCOUNTS 
 
-- HTTP Method: PUT
-- Endpoint: /users/me
+## Create a New Account
+
+Constraints: User sending request must be authenticated.
+Note: A user can have at most 1 accounts.
+
+- HTTP Method: POST
+- Endpoint: /acocunts/
 - Request Format:
 
 {
-    "_id": "string (optional)",
-    "name": "string (optional)",
-    "email": "string (optional)",
-    "phoneNumber": "number (optional)"
+    "owner": "string",
+    "pin": "string (optional)",
 }
-  
 
 - Response Format:
 {
-    "_id": "string (optional)",
-    "name": "string (optional)",
-    "email": "string (optional)",
-    "phoneNumber": "number (optional)"
+    "owner": "string",
+    "balance": 0,
+    "accountNumber": "string"
 }
+
+## View all accounts
+
+Constraints: User sending request must be `authorized` (e.g ADMIN).
+
+- HTTP Method: GET
+- Endpoint: /acocunts/
+
+- Response Format:
+[
+    {
+    "owner": "string",
+    "balance": 0,
+    "accountNumber": "string"
+    },
+
+    {
+    "owner": "string",
+    "balance": 0,
+    "accountNumber": "string"
+    }
+
+]
+
+## View account details (REGULAR USERS)
+
+Constraints: User sending request must be authenticated.
+
+- HTTP Method: GET
+- Endpoint: /acocunts/me
+
+- Response Format:
+{
+    "owner": "string",
+    "balance": 0,
+    "accountNumber": "string"
+}
+
+## View my transactions details (REGULAR USERS)
+
+Constraints: User sending request must be authenticated.
+
+- HTTP Method: GET
+- Endpoint: /acocunts/me/transactions
+
+- Response Format:
+[
+    {
+        "_id": "string",
+        "source": "string",
+        "transactionType": "string (enum)",
+        "destination": "string",
+        "amount": number,
+        "createdAt": Date,
+        "updatedAt": Date
+    }
+]
+
+# Transactions
+
+## DEPOSIT (REGULAR USERS)
+
+Constraints: User sending request must be authenticated.
+
+- HTTP Method: POST
+- Endpoint: /transactions/deposit
+
+- Request Format:
+
+{
+    "destination": "string",
+    "amount": number,
+    "pin": string
+
+}
+
+- Response Format:
+{
+    "destination": "string",
+    "amount": number,
+    "success": boolean
+}
+
+## TRANSFER (REGULAR USER)
+
+- HTTP Method: POST
+- Endpoint: /transactions/transfer
+
+- Request Format:
+
+{
+    "source": "string",
+    "destination": "string",
+    "amount": number,
+    "pin": "string"
+}
+
+- Response Format:
+{
+    "source": "string",
+    "destination": "string",
+    "amount": number,
+    "success": boolean
+}
+
 
 ---
 
-## API Endpoints
+# API Endpoints
 
 The API includes the following endpoints:
 
-- POST /api: Create a new person.
-- GET /api/:user_id: Fetch details of a person by ID.
-- PUT /api/:user_id: Update the details of an existing person by ID.
-- DELETE /api/:user_id: Remove a person by ID.
+- POST /auth/login/: Login to the system
+- POST /auth/logout: Logout the current user 
+
+- POST /users/: Create a new person.
+- GET /users/: Get all the users in the system (Admin role required)
+- GET /users/me: View the current user's details
+
+- POST /accounts/: Create a new account for a user
+- GET /accounts/: Get all the users in the system (Admin role required)
+- GET /accounts/me: View the current user's account details
+- GET /accounts/me/transactions : View the current user's account transaction details
+
+- POST /transactions/transfer: Create a new transfer request
+- POST /transactions/deposit: Create a new deposit request
 
 ---
 
 ## Sample Usage
 
-### Creating a New Person
+### LOGIN 
 
 Request:
 
-POST /api
+POST /auth/login
 Content-Type: application/json
 
+Request: 
 {
-  "name": "John Doe",
-  "email": "john@example.com",
-  "age": 30
+    "email": "janesmith@example.com",
+    "password": "Password456#"
 }
 
-Response:
+Response :
+
+Headers: Authorization : Bearer bearer_token
 
 {
-  "_id": "unique_id",
-  "name": "John Doe",
-  "email": "john@example.com",
-  "age": 30
+    "success" : true
 }
 
-### Fetching Person Details
+### CREATING A USER
 
 Request:
 
-GET /api/unique_id
-
-Response:
-
-{
-  "_id": "unique_id",
-  "name": "John Doe",
-  "email": "john@example.com",
-  "age": 30
-}
-
-### Updating Person Details
-
-Request:
-
-PUT /api/unique_id
+POST /users
 Content-Type: application/json
+Authorization: Bearer bearer_token
 
 {
-  "age": 31
+  "firstname": "John",
+  "lastname": "Doe",
+  "email": "johndoe@gmail.com",
+  "password": "Custompass123#",
+  "confrimPassword": "Custompass123#",
+  "phoneNumber": "+234-9013489921"
 }
 
 Response:
 
 {
-  "_id": "unique_id",
-  "name": "John Doe",
-  "email": "john@example.com",
-  "age": 31
+    "_id" : "39893fhb30023884bdg",
+    "firstname": "John",
+    "lastname": "Doe",
+    "email": "johndoe@gmail.com",
+    "phoneNumber": "+234-9013489921"
 }
 
-### Deleting a Person
+### FETCHING ALL USERS DETAILS (ADMIN authorization required)
 
 Request:
 
-DELETE /api/unique_id
+GET /users/
+Content-Type: application/json
+Authorization: Bearer bearer_token
+
+
+Response:
+
+[
+    {
+    "_id" : "34fci49304095893bcf",
+    "firstname": "John",
+    "lastname": "Doe",
+    "email": "johndoe@gmail.com",
+    "phoneNumber": "+234-9013489921"
+    },
+    {
+    "_id": "29hhi4949834895034f",
+    "firstname": "Jane",
+    "lastname": "Doe",
+    "email": "janedoe@gmail.com",
+    "phoneNumber": "+234-901234567"
+    }
+]
+
+### Fetching the cuurently logged in user's details
+
+Request:
+
+PUT /users/me
+Content-Type: application/json
+Authorization: Bearer bearer_token
 
 Response:
 
 {
-  "message": "Person deleted successfully"
+    "_id": "65db8480be0e39e3421dd6a1",
+    "firstname": "Jane",
+    "lastname": "Smith",
+    "email": "janesmith@example.com",
+    "phoneNumber": "+234-9013489922",
+    "isActive": true,
+    "joined": "2024-02-25T18:18:40.972Z",
+    "lastLogin": "2024-02-25T18:29:17.722Z"
 }
+
+
+### CREATE ACCOUNT 
+
+POST /accounts/
+Content-Type: application/json
+Authorization: Bearer bearer_token
+
+Request :
+
+{
+    "owner": "65db95795427480fe2912d8e",
+    "pin": 1234
+}
+
+Response :
+{
+    "owner": "65db95795427480fe2912d8e",
+    "balance": 0,
+    "accountNumber: "2131543271",
+}
+
+
+### VIEW CURRENTLY LOGGED IN USER ACCOUNT DETAILS
+
+GET /accounts/me
+Content-Type: application/json
+Authorization: Bearer bearer_token
+
+Request :
+
+{
+    "owner": "65db95795427480fe2912d8e",
+    "balance": 0,
+    "accountNumber: "2131543271",
+}
+
+### VIEW ALL USERS ACCOUNT DETAILS (ADMIN AUTH REQUIRED)
+
+GET /accounts/
+Content-Type: application/json
+Authorization: Bearer bearer_token
+
+Response :
+
+[
+    {
+    "owner": "65db95795427480fe2912d8e",
+    "balance": 1280,
+    "accountNumber: "2131543271",
+    },
+
+    {
+    "owner": "56db95795427976fe2912f8d",
+    "balance": 2500,
+    "accountNumber: "2131543271",
+    }
+]
+
+### VIEW CURRENTLY LOGGED IN USER ACCOUNT TRANSACTION DETAILS
+
+GET /accounts/me/transactions
+Content-Type: application/json
+Authorization: Bearer bearer_token
+
+Response :
+
+[
+    {
+        "_id": "65db8f845427480fe2912d71",
+        "source": "2152297904",
+        "transactionType": "DEPOSIT",
+        "destination": "2152297904",
+        "amount": 239,
+        "createdAt": "2024-02-25T19:05:40.281Z",
+        "updatedAt": "2024-02-25T19:05:40.281Z",
+        "__v": 0
+    },
+    {
+        "_id": "65db8f845427480fe2912d71",
+        "source": "2131643271",
+        "transactionType": "TRANSFER",
+        "destination": "2152297904",
+        "amount": 250,
+        "createdAt": "2024-02-25T19:05:40.281Z",
+        "updatedAt": "2024-02-25T19:05:40.281Z",
+        "__v": 0
+    }
+]
+
+### CREATE A DEPOSIT 
+
+POST /transactions/deposit
+Content-Type: application/json
+Authorization: Bearer bearer_token
+
+Request :
+{
+    "destination": "2116927207",
+    "amount": 10000
+}
+
+Response : 
+
+{
+    "destination": "2116927207",
+    "amount": 10000,
+    "success": true
+}
+
+### CREATE A TRANSFER
+
+POST /transactions/transfer
+Content-Type: application/json
+Authorization: Bearer bearer_token
+
+Request :
+
+{
+    "source": "2116927207",
+    "destination": "2152297904",
+    "amount": 500,
+    "pin": 1234
+}
+
+Response :
+
+{
+    "source": "2116927207",
+    "destination": "2152297904",
+    "amount": 500,
+    "success": true
+}
+
+
+
 
 ---
 
 ## Limitations and Assumptions
 
+- The MongoDB database connected MUST be a repilca set! This is to facilitate atomic transactions.
 - This API assumes a MongoDB database is set up and accessible with a valid connection URI.
 - Data validation for email and age fields is not enforced; they are optional fields.
 
@@ -264,7 +545,51 @@ Response:
 
 ## Setting Up and Deploying the API
 
-Follow the setup and deployment instructions in the [README.md](README.md) file of the project repository.
+## Prerequisites
+
+- Node.js and npm and MongoDB should be installed on your machine. You can download and install them from the official Node.js website (https://nodejs.org). MongoDB (https://mongodb.com)
+
+## Installation
+
+1. Clone the repository or download the source code.
+
+```bash
+git clone <https://github.com/t-ega/Learnly-Financial-Backend>
+```
+
+2. Navigate to the project directory.
+
+```bash
+cd <learnly-financial-backend>
+```
+
+3. Install the project dependencies.
+```bash
+npm install
+```
+
+4. Environment Variables
+Some environment variables have been set up to provide neccessary variables to the application
+ see .env.example in the root directory of this folder and create a .env file with those variables
+
+
+## Run the Application
+To start the NestJS application locally, use the following command:
+
+```bash
+npm run start:dev
+``` 
+To run in development mode
+
+```bash
+npm run start
+```
+To run normally
+
+## Accessing the Application
+
+Open postman or any other application of your choice and navigate to http://localhost:3000/v1/api (or the specified port if you have configured it differently in your .env file). You should see your NestJS application running locally.
+
 
 For local development, make sure you have Node.js, npm, and MongoDB installed.
 
