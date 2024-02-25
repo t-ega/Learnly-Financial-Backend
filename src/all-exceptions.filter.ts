@@ -29,7 +29,7 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
 
     // Prepare the response object with default values
     const myResponseObj: MyErrorResponseObj = {
-      statusCode: 500,
+      statusCode: 500, // default status code
       timestamp: new Date().toISOString(),
       path: request.url,
       response: '',

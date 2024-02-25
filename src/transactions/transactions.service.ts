@@ -12,6 +12,7 @@ import { CreateTransferDto } from './dto/create-transfer.dto';
 import { TransactionDto } from './dto/transaction.dto';
 import { CreateDepositDto } from './dto/deposit.dto';
 import { ITransaction, ITransferResponse, TransactionType } from '../types';
+import { MyLoggerService } from '../my-logger/my-logger.service';
 
 @Injectable()
 export class TransactionsService {
@@ -33,6 +34,8 @@ export class TransactionsService {
    * 
    * @param userService | Used when we want to suspend a user's account after 5 failed wrong pin attempts
    */
+
+  private readonly logger = new MyLoggerService(TransactionsService.name);
 
   constructor(
     @InjectModel(Transaction.name) private transactionsModel: Model<Transaction>,
@@ -161,12 +164,12 @@ export class TransactionsService {
       const updatedBalance = senderAccount.balance - amount;
       const recipientUpdatedBalance = recipientAccount.balance + amount;
 
-      await this.accountService.updateAccount(senderAccount.accountNumber, { balance: updatedBalance }, session);
-      await this.accountService.updateAccount(recipientAccount.accountNumber, { balance: recipientUpdatedBalance }, session);
-
+      const r = await this.accountService.updateAccount(senderAccount.accountNumber, { balance: updatedBalance }, session);
+      const j = await this.accountService.updateAccount(recipientAccount.accountNumber, { balance: recipientUpdatedBalance }, session);
+      
       await session.commitTransaction();
       session.endSession();
-
+      
       // register the transaction
       const transactionDto = {...createTransferDto, transactionType: TransactionType.TRANSFER};
       await this.create(transactionDto, idempotencyKey);
@@ -174,7 +177,12 @@ export class TransactionsService {
     } catch (error) {
       await session.abortTransaction();
       session.endSession();
-      return response
+
+      // log the error
+      const entry = `TRANSFER ERROR: FAILED TO EXECUTE TRANSFER FOR ${senderAccount.accountNumber} to ${recipientAccount.accountNumber}`;
+      this.logger.error(entry, error);
+
+      throw error;
     }
 
     response.success = true  // modify the response object
@@ -213,6 +221,9 @@ export class TransactionsService {
     }catch(error){
         await session.abortTransaction();
         session.endSession();
+        // log the error
+        const entry = `DEPOSIT ERROR: FAILED TO EXECUTE DEPOSIT FOR ${account.accountNumber}`;
+        this.logger.error(entry, error);
         throw error;
     }
 
