@@ -414,7 +414,7 @@ The API includes the following endpoints:
 
 - POST /transactions/transfer: Create a new transfer request
 - POST /transactions/deposit: Create a new deposit request
-
+- POST /transactions/withdraw: Create a new withdrawal request
 ---
 
 ## Sample Usage
@@ -708,6 +708,7 @@ Response:
     "amount": 500,
     "success": "true"
 }
+```
 
 ---
 
@@ -722,13 +723,13 @@ Response:
 1. Clone the repository or download the source code.
 
 ```bash
-git clone <https://github.com/t-ega/Learnly-Financial-Backend>
+git clone https://github.com/t-ega/Learnly-Financial-Backend
 ```
 
 2. Navigate to the project directory.
 
 ```bash
-cd <learnly-financial-backend>
+cd learnly-financial-backend
 ```
 
 3. Install the project dependencies.
