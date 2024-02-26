@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -49,7 +50,7 @@ describe('AuthController', () => {
       };
 
       const mockDetails = { x_auth_token: 'mock_token' };
-      const mockResponse = { setHeader: jest.fn(), status: jest.fn(), json: jest.fn() } as unknown as Response;
+      const mockResponse = { setHeader: jest.fn(), status: jest.fn(() => ({ json: jest.fn() })), json: jest.fn() } as unknown as Response;
 
       jest.spyOn(authService, 'login').mockResolvedValue(mockDetails);
 
@@ -68,9 +69,9 @@ describe('AuthController', () => {
 
       const mockResponse = { setHeader: jest.fn(), status: jest.fn(), json: jest.fn() } as unknown as Response;
 
-      jest.spyOn(authService, 'login').mockRejectedValue(new Error('Email or password incorrect'));
+      jest.spyOn(authService, 'login').mockRejectedValueOnce(new HttpException("", HttpStatus.BAD_REQUEST));
 
-      await expect(controller.signIn(signInDto, mockResponse)).rejects.toThrow('Email or password incorrect');
+      await expect(controller.signIn(signInDto, mockResponse)).rejects.toThrow(HttpException);
 
       expect(authService.login).toHaveBeenCalledWith(signInDto.email, signInDto.password);
       expect(mockResponse.setHeader).not.toHaveBeenCalled();

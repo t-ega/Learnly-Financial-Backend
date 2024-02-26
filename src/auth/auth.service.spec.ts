@@ -50,25 +50,28 @@ describe('AuthService', () => {
   describe('login', () => {
     it('should login user and return auth token', async () => {
 
-      const mockUser: HydratedDocument<IUser> = {
-        _id: '1',
+      const mockUser = {
+        id: '1',
         firstname: 'John',
         lastname: 'Doe',
         email: 'john@example.com',
-        password: await bcrypt.hash('password123', 10),
+        password: 'password123',
         phoneNumber: '1234567890',
         role: UserRoles.REGULAR,
-      } as HydratedDocument<IUser>;
+      } as unknown as IUser;
 
-      const mockPayload = { _id: '1', role: UserRoles.REGULAR };
+      const mockPayload = { id: '1', role: UserRoles.REGULAR };
       const mockToken = 'mock_token';
 
       jest.spyOn(userService, 'getUserByEmail').mockResolvedValue(mockUser);
+      jest.spyOn(userService, 'updateUserById').mockResolvedValue(null);
       jest.spyOn(jwtService, 'signAsync').mockResolvedValue(mockToken);
+      jest.spyOn(bcrypt, 'compare').mockImplementationOnce(() => true);
 
       const result = await service.login(mockUser.email, 'password123');
 
       expect(userService.getUserByEmail).toHaveBeenCalledWith(mockUser.email);
+      expect(userService.updateUserById).toHaveBeenCalledTimes(1);
       expect(jwtService.signAsync).toHaveBeenCalledWith(mockPayload);
       expect(result).toEqual({ x_auth_token: mockToken });
     });

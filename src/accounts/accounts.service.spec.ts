@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getModelToken } from '@nestjs/mongoose';
-import { HydratedDocument, Model } from 'mongoose';
+import { Model } from 'mongoose';
 
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
@@ -34,20 +33,23 @@ describe('AccountsService', () => {
         pin: 1234,
       };
 
-      const createdAccount: HydratedDocument<IAccount> = {
+      const createdAccount = {
         owner: {
           id: '232943895ff435678cd',
           role: UserRoles.REGULAR,
         },
         accountNumber: '1234567890',
         balance: 0,
-        pin: createAccountDto.pin.toString(),
-      } as HydratedDocument<IAccount>;
+      } as IAccount;
 
       jest.spyOn(service, 'create').mockResolvedValueOnce(createdAccount);
 
       const result = await service.create(createAccountDto);
-      expect(result).toEqual(createdAccount);
+
+      expect(result).toEqual(expect.objectContaining(createdAccount));
     });
+
+
   });
+
 });

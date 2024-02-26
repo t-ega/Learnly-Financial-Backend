@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Ip, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Ip, Param, Post, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import * as _ from "lodash";
 
 import { AuthGuard } from '../guards/auth.guard';
@@ -7,6 +7,7 @@ import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { IRequestPayload } from '../types';
 import { MyLoggerService } from '../my-logger/my-logger.service';
+import { UsersTransformInterceptor } from '../interceptors/users.transfrom.interceptor';
 
 @Controller('accounts')
 @UseGuards(AuthGuard) // all users must be authenticated before they can access the accounts endpoint
@@ -27,14 +28,14 @@ export class AccountsController {
     private readonly logger = new MyLoggerService(AccountsController.name);
     constructor(private acountsService: AccountsService){}
 
+    @UseInterceptors(UsersTransformInterceptor)
     @Post()
     async create(@Body() createAccountDto: CreateAccountDto){
         /**
          * @param createAccountDto | An object representing the required fields to be present
          */
         const account = await this.acountsService.create(createAccountDto);
-        const response = _.pick(account, ['owner',"balance", "accountNumber"]);
-        return response;
+        return account;
     }
 
     @UseGuards(AdminGuard)

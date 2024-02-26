@@ -40,7 +40,7 @@ export class AccountsService {
         const userAccount: HydratedDocument<IAccount> = await this.accountModel.findOne({owner: createAccountDto.owner});
         if (userAccount) return userAccount
 
-        const user: HydratedDocument<IAccount> =  new this.accountModel({pin: hashedPin, accountNumber, ...values});
+        const user: HydratedDocument<IAccount> = await this.accountModel.create({pin: hashedPin, accountNumber, ...values});
         await user.save();
         return user;
     }

@@ -4,10 +4,10 @@ import mongoose from 'mongoose';
 // internal imports
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto, UpdateUserDtoFromEndpoint } from './dto/update-user.dto';
+import { UpdateUserDtoFromEndpoint } from './dto/update-user.dto';
 import { AuthGuard } from '../guards/auth.guard';
 import { AdminGuard } from '../guards/isadmin.guard';
-import { IRequestPayload } from '../types';
+import { IRequestPayload, IUser } from '../types';
 import { UsersTransformInterceptor } from 'src/interceptors/users.transfrom.interceptor';
 
 @Controller('users')
@@ -23,6 +23,7 @@ export class UsersController {
 
   constructor(private readonly usersService: UsersService) {}
 
+  @UseInterceptors(UsersTransformInterceptor)
   @Post()
   /**
    * Register a new user
@@ -58,6 +59,7 @@ export class UsersController {
     return await this.usersService.getUserById(req.user.id)
   }
 
+  @UseInterceptors(UsersTransformInterceptor)
   @UseGuards(AuthGuard, AdminGuard)
   @Get(":id")
   /**
@@ -66,17 +68,20 @@ export class UsersController {
    * @throws NotFoundException if the user is not found or the ID is invalid
    * @returns The user with the specified ID
    */
-  async getUserById(@Param("id") id: string){
+  async getUserById(@Param("id") id: string) : Promise<IUser> {
     
     const isValid = mongoose.isValidObjectId(id);
 
     if (!isValid) throw new NotFoundException("User not found");
 
-    const user = this.usersService.getUserById(id);
+    const user = await this.usersService.getUserById(id);
 
-    if(!user) throw new NotFoundException("User not found")
+    if(!user) throw new NotFoundException("User not found");
+
+    return user
   }
-
+  
+  @UseInterceptors(UsersTransformInterceptor)
   @UseGuards(AuthGuard)
   @Patch(":id")
   /**
@@ -96,25 +101,6 @@ export class UsersController {
     if(!updatedUser) throw new NotFoundException("User not found")
 
     return updatedUser;
-  }
-
-  @UseGuards(AuthGuard, AdminGuard)
-  @Delete(":id")
-  /**
-   * Delete a user by ID
-   * @param id - The ID of the user to delete
-   * @throws NotFoundException if the user is not found or the ID is invalid
-   */
-  async deleteUser(@Param("id") id: string) {
-    const isValid = mongoose.isValidObjectId(id);
-
-    if (!isValid) throw new NotFoundException("User not found");
-
-    const updatedUser =  await this.usersService.deleteUserById(id);
-
-    if(!updatedUser) throw new NotFoundException("User not found")
-
-    return;
   }
 
 }

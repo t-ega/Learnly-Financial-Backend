@@ -18,7 +18,7 @@ To test atomic transactions in testing or development see https://www.mongodb.co
 # Addtional Note:
 
 ## Security
-
+- Authentication is made using JWT tokens
 With heavy concerns on security there has been a lot of measures that have been put in place in order to ensure that the service is extremely secure. They are listed as follows:
 - When a transfer is ongoing in the system, the user is permitted to retry their transfer pin up to 5 maximum times, after this trial has been exceeded, the user is automatically suspened from the system by marking their account as `isActive=false`, once this is done the user wont be able to login or access any service on the system.
 - To reactive their account, an Admin must mark their account as active.

@@ -54,10 +54,10 @@ export class UsersService {
     const salt = await bcrypt.genSalt(saltRounds);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user = new this.userModel({ password: hashedPassword, ...userObject });
-    await user.save()
+    const user = await this.userModel.create({ password: hashedPassword, ...userObject });
+    await user.save();
     
-    return _.pick(user, ["_id", "firstname", "lastname", "email", "phoneNumber", ]);
+    return user
   }
 
   async getUsers(): Promise<IUser[]>{

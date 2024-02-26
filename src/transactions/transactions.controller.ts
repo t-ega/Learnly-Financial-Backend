@@ -42,7 +42,6 @@ export class TransactionsController {
     @Post("transfer")
     @UseInterceptors(CustomCacheInterceptor)
     async transfer(@Body() createTransferDto: CreateTransferDto, @Req() req: IRequestPayload){
-        console.log("kkkk");
         const idempotencyKey = req.headers['idempotency-key'] as string;
         const response = await this.transactionService.transferFunds(req.user.id, createTransferDto, idempotencyKey);
         this.logger.log(`Transfer executed for:\t${response.destination}\tFROM: ${response.source}\t Success: ${response.success}`);

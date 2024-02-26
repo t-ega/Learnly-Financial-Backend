@@ -57,7 +57,7 @@ describe('AccountsController', () => {
         pin: 1234,
       };
 
-      const createdAccount: HydratedDocument<IAccount> = {
+      const createdAccount = {
         owner: {
           id: '232943895ff435678cd',
           role: UserRoles.REGULAR,
@@ -65,7 +65,7 @@ describe('AccountsController', () => {
         balance: 0,
         accountNumber: '1234567890',
         pin: '1234',
-      } as HydratedDocument<IAccount>;
+      } as unknown as IAccount;
 
       jest.spyOn(accountsService, 'create').mockResolvedValueOnce(createdAccount);
 

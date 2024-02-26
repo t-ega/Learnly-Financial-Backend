@@ -37,7 +37,7 @@ export class AuthService {
         // construct the payload which is going to be used to verify the user during subsequent requests
 
         // every JWTPAYLOAD must use the IPAYLOAD interface for annotations
-        const jwtPayload : Ipayload  = {id: user.id, role: UserRoles.REGULAR}
+        const jwtPayload : Ipayload  = { id: user.id, role: UserRoles.REGULAR}
         
         const x_auth_token =  await this.jwtService.signAsync(jwtPayload);
 

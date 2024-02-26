@@ -87,7 +87,7 @@ export class TransactionsService {
      * @returns The created transaction
      */
 
-    const body = new this.transactionsModel(transactionDto);
+    const body = await this.transactionsModel.create(transactionDto);
     await body.save();
 
     if (idempotencyKey) {
@@ -120,7 +120,7 @@ export class TransactionsService {
   }
 
   async transferFunds(req_user_id: string, createTransferDto: CreateTransferDto, idempotencyKey?: string): Promise<ITransferResponse> {
-    const {source, amount, pin, destination} = createTransferDto;
+
     /**
      * Transfer funds between two accounts
      * @param senderAccountNumber - The account number of the sender
@@ -128,14 +128,15 @@ export class TransactionsService {
      * @param amount - The amount to transfer
      * @throws HttpException with a status code 400 if one or both bank accounts do not exist,
      *  or if there are insufficient funds in the sender account
-     */
-
+    */
+   
+   const {source, amount, pin, destination} = createTransferDto;
     // enusuring atomicity
     const session = await this.transactionsModel.startSession();
     session.startTransaction();
 
     const response = { source, destination, amount, success: false}
-  
+
 
     const senderAccount = await this.accountService.findAccountByAccountNumber(source);
     const recipientAccount = await this.accountService.findAccountByAccountNumber(destination);
