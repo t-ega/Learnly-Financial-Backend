@@ -13,6 +13,7 @@ import { TransactionDto } from './dto/transaction.dto';
 import { CreateDepositDto } from './dto/deposit.dto';
 import { ITransaction, ITransferResponse, TransactionType } from '../types';
 import { MyLoggerService } from '../my-logger/my-logger.service';
+import { WithdrawalDto } from './dto/withdrawal.dto';
 
 @Injectable()
 export class TransactionsService {
@@ -49,18 +50,17 @@ export class TransactionsService {
     private userService: UsersService
   ) {}
 
-  async cacheResponse(body: Transaction, idempotencyKey: string) {
+  async cacheResponse(idempotencyKey: string, body: Transaction,) {
     /**
      * Cache the response of a transaction for future requests
      * @param body - The transaction body to be cached and returnd in subsequent requests.
      * @param idempotencyKey - The idempotency key for the transaction
      */
 
-    const idempotentObject = { idempotencyKey, body };
-    await this.cacheManager.set(idempotencyKey, idempotentObject, 86400000); // cache for a day in milliseconds
+    await this.cacheManager.set(idempotencyKey, body, 86400000); // cache for a day in milliseconds
   }
 
-  private async updatePinFailedAttempts(user_id: string){
+  private async updatePinFailedAttempts(user_id: string): Promise<number>{
     /**
      * This function is invoked everytime a user tries to make a transfer with a wrong pin.
      */
@@ -68,17 +68,18 @@ export class TransactionsService {
     let count: number = await this.cacheManager.get(user_id) || 0;
     count++;
 
-    await this.cacheManager.set(user_id, count);
+    await this.cacheManager.set(user_id, count, 3600); // cache for an hour
 
     if(count >= 5) {
 
       // suspend the user's account if the failed attempts is 5 or greater;
-      await this.userService.suspendOrEnableUserAccount(user_id, "Maximum No of pin trials exceeded");
-      throw new HttpException("You exceed the maximum number of trials. Youre account has been suspended.", HttpStatus.UNAUTHORIZED);
-    }
+      await this.userService.suspendUserAccount(user_id, "Maximum No of pin trials exceeded");
+      }
+
+    return count;
   }
 
-  private async create(transactionDto: TransactionDto, idempotencyKey?: string) {
+  private async createTransaction(transactionDto: TransactionDto, idempotencyKey?: string) {
     /**
      * An internal method to register a new transaction
      * @param transactionDto - The transaction details
@@ -91,7 +92,7 @@ export class TransactionsService {
 
     if (idempotencyKey) {
       // Cache the response for future requests
-      await this.cacheResponse(body, idempotencyKey);
+      await this.cacheResponse(idempotencyKey, body);
     }
 
     return body;
@@ -118,7 +119,7 @@ export class TransactionsService {
     });
   }
 
-  async transferFunds(createTransferDto: CreateTransferDto, idempotencyKey?: string): Promise<ITransferResponse> {
+  async transferFunds(req_user_id: string, createTransferDto: CreateTransferDto, idempotencyKey?: string): Promise<ITransferResponse> {
     const {source, amount, pin, destination} = createTransferDto;
     /**
      * Transfer funds between two accounts
@@ -139,8 +140,14 @@ export class TransactionsService {
     const senderAccount = await this.accountService.findAccountByAccountNumber(source);
     const recipientAccount = await this.accountService.findAccountByAccountNumber(destination);
 
+    if(amount <= 0) throw new HttpException("Invalid amount", HttpStatus.BAD_REQUEST);
+
     if (!senderAccount || !recipientAccount) {
       throw new HttpException('One or both bank accounts do not exist.', HttpStatus.BAD_REQUEST);
+    }
+
+    if(senderAccount.owner.id !== req_user_id){
+      throw new HttpException("You are not allowed to transfer from this account", HttpStatus.BAD_REQUEST);
     }
 
     if(source === destination){
@@ -154,8 +161,15 @@ export class TransactionsService {
     const isValid = await bcyrpt.compare(pin.toString(), senderAccount.pin);
 
     if (!isValid) {
-        this.updatePinFailedAttempts(senderAccount.owner.id);
-        throw new HttpException("Invalid Pin supplied!", HttpStatus.BAD_REQUEST)
+        const trials = await this.updatePinFailedAttempts(senderAccount.owner.id);
+
+        if(trials >= 5) {
+          throw new HttpException("Maximum No of pin trials exceeded", HttpStatus.BAD_REQUEST);
+        }
+        else{
+          throw new HttpException("Invalid Pin supplied!", HttpStatus.BAD_REQUEST)
+        }
+
     };
 
     // Perform the transfer
@@ -172,7 +186,7 @@ export class TransactionsService {
       
       // register the transaction
       const transactionDto = {...createTransferDto, transactionType: TransactionType.TRANSFER};
-      await this.create(transactionDto, idempotencyKey);
+      await this.createTransaction(transactionDto, idempotencyKey);
 
     } catch (error) {
       await session.abortTransaction();
@@ -216,7 +230,7 @@ export class TransactionsService {
         
       // register the transaction
       const depositDto = {...createDepositDto, transactionType: TransactionType.DEPOSIT, source: account.accountNumber};
-      await this.create(depositDto, idempotencyKey);
+      await this.createTransaction(depositDto, idempotencyKey);
 
     }catch(error){
         await session.abortTransaction();
@@ -231,5 +245,68 @@ export class TransactionsService {
     return response
 
   }
+
+  async withdrawFunds(withdrawalDto: WithdrawalDto, idempotencyKey?: string): Promise<ITransferResponse> {
+    /**
+     * Note: The money deducted from the account does not go anywhere, it is just removed from the account.
+     * Withdraw funds from an account
+     * @param accountNumber - The account number to withdraw funds from
+     * @param amount - The amount to withdraw
+     * @throws HttpException with a status code 400 if the bank account does not exist
+     * or if there are insufficient funds in the account
+     */
+
+    const { source, destination, amount, pin, destinationBankName } = withdrawalDto;
+    const response = { destination, amount, destinationBankName,  success: false}
+
+    const sourceAccount = await this.accountService.findAccountByAccountNumber(source);
+
+    if (!sourceAccount) {
+      throw new HttpException('Source Bank account does not exist.', HttpStatus.BAD_REQUEST);
+    }
+
+    if (sourceAccount.balance < amount) {
+      throw new HttpException('Insufficient funds in the account.', HttpStatus.BAD_REQUEST);
+    }
+
+    const isValid = await bcyrpt.compare(pin.toString(), sourceAccount.pin);
+
+    if (!isValid) {
+        const trials = await this.updatePinFailedAttempts(sourceAccount.owner.id);
+
+        if(trials >= 5) {
+          throw new HttpException("Maximum No of pin trials exceeded", HttpStatus.BAD_REQUEST);
+        }
+        else{
+          throw new HttpException("Invalid Pin supplied!", HttpStatus.BAD_REQUEST)
+        }
+
+    };
+
+    // Perform the withdrawal
+    const session = await this.transactionsModel.startSession();
+    session.startTransaction();
+
+    try {
+      const updatedBalance = sourceAccount.balance - amount;
+      await this.accountService.updateAccount(sourceAccount.accountNumber, { balance: updatedBalance });
+      
+      // register the transaction
+      const transactionDto = { source: sourceAccount.accountNumber, destination: sourceAccount.accountNumber, amount, transactionType: TransactionType.WITHDRAWAL};
+      await this.createTransaction(transactionDto, idempotencyKey);
+
+    }catch(error){
+        await session.abortTransaction();
+        session.endSession();
+        // log the error
+        const entry = `WITHDRAWAL ERROR: FAILED TO EXECUTE WITHDRAWAL FOR ${sourceAccount.accountNumber}`;
+        this.logger.error(entry, error);
+        throw error;
+    }
+
+    response.success = true;
+    return response
+  }
+
 
 }

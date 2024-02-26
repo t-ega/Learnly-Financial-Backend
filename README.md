@@ -2,6 +2,19 @@
 
 This document provides documentation for the Learnly Finance REST API, including request/response formats, usage examples, limitations, and setup/deployment instructions.
 
+## Limitations and Assumptions
+
+- This API assumes a MongoDB database is set up and accessible with a valid connection URI.
+- The MongoDB database connection MUST be a repilca set! This is to facilitate atomic transactions. So atomic transactions would not work in testing or development.
+To test atomic transactions in testing or development see https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/#convert-a-standalone-mongod-to-a-replica-set for more details.
+- The create users endpoint cannot create an Admin user.
+- I have assumed that the optimum number of pin trials should be 5 before a user's account is suspended.
+- I have assumed that a user's account can only be reinstated by an admin.
+- I have assumed that the requirements of the users module is limited to only registration of new users, authentication and authorization of new users.
+- I have assumed that the requirements of the transactions module is limited to deposits, withdrawals and transfers between internal users account.
+- I have assumed that Operations such as DELETE are not supported from the API.
+- I have also assumed that users cannot change their password from the API.
+
 # Addtional Note:
 
 ## Security
@@ -9,7 +22,9 @@ This document provides documentation for the Learnly Finance REST API, including
 With heavy concerns on security there has been a lot of measures that have been put in place in order to ensure that the service is extremely secure. They are listed as follows:
 - When a transfer is ongoing in the system, the user is permitted to retry their transfer pin up to 5 maximum times, after this trial has been exceeded, the user is automatically suspened from the system by marking their account as `isActive=false`, once this is done the user wont be able to login or access any service on the system.
 - To reactive their account, an Admin must mark their account as active.
-- Some endpoints are sensitive e.g fetching all users account or listing all users in the system. Every request made to this endpoint is logged to a `myLogFile.log` with the `request IP address`.
+
+### Transfer
+A user making a transfer request must be the owner of the sending account.
 
 ### CORS Option
 We are using cors to enable cross-origin resource sharing.
@@ -24,9 +39,17 @@ This resource is rate limited to a maximum of `3 requests` from a particular IP 
 If you exceed either limit, your request will return an HTTP 429 Too Many Requests status code.
 
 ## Performance
+
 For quick and optimal perfomance of the system, all POST requests to the `transaction/transfer` and `transaction/deposit` endpoint are `cached` for idempotency. Idempotency would help in situations where users retries a request after it was successful and the response didnt get to them, the request would be cached so if they retry the system remains unchanged. 
 - This idempotency is achieved by passing in an `Idempotency-key` in the request headers.
 - **NOTE** If the idepotency key isn't passed in the request wont be cached!
+
+### Withdrwals
+The withdrawal operation just deducts the amount specified from the user's wallet account balance. It calls a mock service to make a transfer to the destination account.
+
+## Logging and Monitoring
+- Some endpoints are sensitive e.g fetching all users account or listing all users in the system. Every request made to this endpoint is logged to a `myLogFile.log` with the `request IP address`.
+- There are two log files by default named `myLogFile.log` and `errorLogs.log`. In the myLogFile, it contains logging details on general activites that occur in the system such as startup, Recording when deposits and transfers are made and when request to some endpoints are made. In the `errorLog` file, it conains logging details on intenal system errors and Failed deposit and transactions.
 
 
 ## Table of Contents
@@ -346,6 +369,31 @@ Constraints: User sending request must be authenticated.
 ```
 
 
+## WITHDRAW
+- HTTP Method: POST
+- Endpoint: /transactions/withdraw
+
+Request :
+```json
+{
+    "source": "string",
+    "destination": "string", // an external bankaccount number
+    "destinationBankName": "string",
+    "amount": "number",
+    "pin": "number"
+}
+```
+Response: 
+
+```json
+{
+    "destination": "string",
+    "destinationBankName": "string",
+    "amount": "number",
+    "success": "boolean" 
+}
+
+
 ---
 
 # API Endpoints
@@ -635,14 +683,31 @@ Response :
 }
 ```
 
+## WITHDRAWAL 
+POST /transactions/withdraw
+Content-Type: application/json
+Authorization: Bearer bearer_token
 
----
+Request :
 
-## Limitations and Assumptions
+```json
+{
+    "source": "2152297904",
+    "destination": "2116927207", // an external bankaccount number
+    "destinationBankName": "Wema Bank",
+    "amount": 500,
+    "pin": 1234
+}
+```
+Response: 
 
-- The MongoDB database connected MUST be a repilca set! This is to facilitate atomic transactions.
-- This API assumes a MongoDB database is set up and accessible with a valid connection URI.
-- Data validation for email and age fields is not enforced; they are optional fields.
+```json
+{
+    "destination": "2116927207",
+    "destinationBankName": "Wema Bank",
+    "amount": 500,
+    "success": "true"
+}
 
 ---
 

@@ -1,7 +1,8 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { TransactionsController } from './transactions.controller';
 import { CacheModule } from '@nestjs/cache-manager';
 import { MongooseModule } from '@nestjs/mongoose';
+
+import { TransactionsController } from './transactions.controller';
 import { Transaction, TransactionSchema } from './transactions.schema';
 import { AccountsModule } from '../accounts/accounts.module';
 import { UsersModule } from '../users/users.module';

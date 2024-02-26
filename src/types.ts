@@ -18,7 +18,8 @@ export enum UserRoles {
 
 export enum TransactionType {
     DEPOSIT = "DEPOSIT",
-    TRANSFER = "TRANSFER"
+    TRANSFER = "TRANSFER",
+    WITHDRAWAL = "WITHDRAWAL"
 }
 
 export interface ITransactionData {

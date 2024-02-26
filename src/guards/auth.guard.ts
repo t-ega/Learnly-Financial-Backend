@@ -31,8 +31,7 @@ export class AuthGuard implements CanActivate {
 
           // check if the user is allowed to login and perform actions
           const user = await this.userService.getUserById(payload.id);
-
-          return user.isActive;
+          return true;
         }
         catch(err){
           throw new UnauthorizedException("Invalid Token");

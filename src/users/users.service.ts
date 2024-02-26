@@ -9,6 +9,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './User.schema';
 import { IUser } from '../types';
+import { MyLoggerService } from '../my-logger/my-logger.service';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +24,8 @@ export class UsersService {
    * 
    * @param userModel User model to interact with.
    */
+
+  private readonly logger = new MyLoggerService(UsersService.name);
 
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
@@ -93,14 +96,13 @@ export class UsersService {
     return await this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true });
   }
 
-  async suspendOrEnableUserAccount(userId: string, reason: string): Promise<void>{
+  async suspendUserAccount(userId: string, reason: string): Promise<void>{
     /**
      * Suspend a user's account by setting the `isActive` property to false.
      * Log the reason why the user was suspended to the logger.s
      */
-    const user = await this.userModel.findById(userId);
-    user.isActive = !user.isActive; // suspend or re-enable it
-    user.save()
+    this.logger.log(`User with ID ${userId} was suspended because ${reason}`);
+    await this.userModel.findByIdAndUpdate(userId, {isActive: false}).exec();
   }
 
   async deleteUserById(id: string): Promise<IUser>{

@@ -1,4 +1,3 @@
-# Use the official Node.js 14 image as the base image
 FROM node:14
 
 # Set the working directory inside the container
@@ -16,4 +15,4 @@ COPY . .
 EXPOSE 3000
 
 # Start the NestJS application
-CMD ["npm", "run", "start:prod"]
+CMD ["npm", "run", "start"]

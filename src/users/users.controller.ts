@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 // internal imports
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto, UpdateUserDtoFromEndpoint } from './dto/update-user.dto';
 import { AuthGuard } from '../guards/auth.guard';
 import { AdminGuard } from '../guards/isadmin.guard';
 import { IRequestPayload } from '../types';
@@ -34,7 +34,8 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard, AdminGuard) // enforce endpoint for only admins
-  @UseInterceptors(UsersTransformInterceptor) // transform the response using the interceptor
+  // transform the response using the interceptor. Remove fields like password, createdAt, updatedAt etc
+  @UseInterceptors(UsersTransformInterceptor) 
   @Get()
   /**
    * Retrieve all users
@@ -45,7 +46,8 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard)
-  @UseInterceptors(UsersTransformInterceptor) // transform the response using the interceptor
+  // transform the response using the interceptor. Remove fields like password, createdAt, updatedAt etc
+  @UseInterceptors(UsersTransformInterceptor)
   @Get("me")
   /**
    * Retrieve the currently authenticated user
@@ -84,7 +86,7 @@ export class UsersController {
    * @throws NotFoundException if the user is not found or the ID is invalid
    * @returns The updated user
    */
-  async updateUser(@Param("id") id: string, @Body() updateUserDto: UpdateUserDto){
+  async updateUser(@Param("id") id: string, @Body() updateUserDto: UpdateUserDtoFromEndpoint){
     const isValid = mongoose.isValidObjectId(id);
 
     if (!isValid) throw new NotFoundException("User not found");
