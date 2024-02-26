@@ -392,7 +392,7 @@ Response:
     "amount": "number",
     "success": "boolean" 
 }
-
+```
 
 ---
 
